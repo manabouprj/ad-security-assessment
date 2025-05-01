@@ -1,0 +1,134 @@
+{
+  "name": "Windows Server 2019 Security Baseline",
+  "version": "1.0",
+  "description": "Microsoft Security Configuration Toolkit baseline for Windows Server 2019",
+  "source": "Microsoft Security Compliance Toolkit 1.0",
+  "settings": {
+    "PasswordComplexity": {
+      "value": "Enabled",
+      "path": "Computer Configuration\\Windows Settings\\Security Settings\\Account Policies\\Password Policy",
+      "severity": "high",
+      "description": "Password must meet complexity requirements",
+      "recommendation": "Enable password complexity requirements to enhance security"
+    },
+    "MinimumPasswordLength": {
+      "value": "14",
+      "path": "Computer Configuration\\Windows Settings\\Security Settings\\Account Policies\\Password Policy",
+      "severity": "high",
+      "description": "Minimum password length",
+      "recommendation": "Set minimum password length to at least 14 characters"
+    },
+    "AccountLockoutThreshold": {
+      "value": "5",
+      "path": "Computer Configuration\\Windows Settings\\Security Settings\\Account Policies\\Account Lockout Policy",
+      "severity": "high",
+      "description": "Account lockout threshold",
+      "recommendation": "Set account lockout threshold to 5 or fewer invalid logon attempts"
+    },
+    "AccountLockoutDuration": {
+      "value": "15",
+      "path": "Computer Configuration\\Windows Settings\\Security Settings\\Account Policies\\Account Lockout Policy",
+      "severity": "medium",
+      "description": "Account lockout duration",
+      "recommendation": "Set account lockout duration to 15 minutes or more"
+    },
+    "ResetAccountLockoutCounter": {
+      "value": "15",
+      "path": "Computer Configuration\\Windows Settings\\Security Settings\\Account Policies\\Account Lockout Policy",
+      "severity": "medium",
+      "description": "Reset account lockout counter after",
+      "recommendation": "Set reset account lockout counter to 15 minutes or more"
+    },
+    "EnableFirewall": {
+      "value": "Enabled",
+      "path": "Computer Configuration\\Windows Settings\\Security Settings\\Windows Firewall with Advanced Security",
+      "severity": "high",
+      "description": "Windows Firewall: Protect all network connections",
+      "recommendation": "Enable Windows Firewall for all network connections"
+    },
+    "AuditAccountLogon": {
+      "value": "Success and Failure",
+      "path": "Computer Configuration\\Windows Settings\\Security Settings\\Advanced Audit Policy Configuration\\Audit Policies\\Account Logon",
+      "severity": "medium",
+      "description": "Audit account logon events",
+      "recommendation": "Configure auditing for account logon events (Success and Failure)"
+    },
+    "AuditAccountManagement": {
+      "value": "Success and Failure",
+      "path": "Computer Configuration\\Windows Settings\\Security Settings\\Advanced Audit Policy Configuration\\Audit Policies\\Account Management",
+      "severity": "medium",
+      "description": "Audit account management",
+      "recommendation": "Configure auditing for account management events (Success and Failure)"
+    },
+    "AuditLogon": {
+      "value": "Success and Failure",
+      "path": "Computer Configuration\\Windows Settings\\Security Settings\\Advanced Audit Policy Configuration\\Audit Policies\\Logon/Logoff",
+      "severity": "medium",
+      "description": "Audit logon events",
+      "recommendation": "Configure auditing for logon events (Success and Failure)"
+    },
+    "AuditPolicyChange": {
+      "value": "Success and Failure",
+      "path": "Computer Configuration\\Windows Settings\\Security Settings\\Advanced Audit Policy Configuration\\Audit Policies\\Policy Change",
+      "severity": "medium",
+      "description": "Audit policy change",
+      "recommendation": "Configure auditing for policy change events (Success and Failure)"
+    },
+    "AuditPrivilegeUse": {
+      "value": "Success and Failure",
+      "path": "Computer Configuration\\Windows Settings\\Security Settings\\Advanced Audit Policy Configuration\\Audit Policies\\Privilege Use",
+      "severity": "medium",
+      "description": "Audit privilege use",
+      "recommendation": "Configure auditing for privilege use events (Success and Failure)"
+    },
+    "AuditSystemEvents": {
+      "value": "Success and Failure",
+      "path": "Computer Configuration\\Windows Settings\\Security Settings\\Advanced Audit Policy Configuration\\Audit Policies\\System",
+      "severity": "medium",
+      "description": "Audit system events",
+      "recommendation": "Configure auditing for system events (Success and Failure)"
+    },
+    "UserRightsAssignment_SeBackupPrivilege": {
+      "value": "Administrators",
+      "path": "Computer Configuration\\Windows Settings\\Security Settings\\Local Policies\\User Rights Assignment",
+      "severity": "medium",
+      "description": "Back up files and directories",
+      "recommendation": "Restrict the 'Back up files and directories' user right to Administrators"
+    },
+    "UserRightsAssignment_SeRestorePrivilege": {
+      "value": "Administrators",
+      "path": "Computer Configuration\\Windows Settings\\Security Settings\\Local Policies\\User Rights Assignment",
+      "severity": "medium",
+      "description": "Restore files and directories",
+      "recommendation": "Restrict the 'Restore files and directories' user right to Administrators"
+    },
+    "UserRightsAssignment_SeTakeOwnershipPrivilege": {
+      "value": "Administrators",
+      "path": "Computer Configuration\\Windows Settings\\Security Settings\\Local Policies\\User Rights Assignment",
+      "severity": "medium",
+      "description": "Take ownership of files or other objects",
+      "recommendation": "Restrict the 'Take ownership of files or other objects' user right to Administrators"
+    },
+    "EnableScreenSaver": {
+      "value": "Enabled",
+      "path": "User Configuration\\Administrative Templates\\Control Panel\\Personalization",
+      "severity": "low",
+      "description": "Enable screen saver",
+      "recommendation": "Enable screen saver to protect unattended sessions"
+    },
+    "ScreenSaverTimeout": {
+      "value": "900",
+      "path": "User Configuration\\Administrative Templates\\Control Panel\\Personalization",
+      "severity": "low",
+      "description": "Screen saver timeout",
+      "recommendation": "Set screen saver timeout to 900 seconds (15 minutes) or less"
+    },
+    "ScreenSaverRequirePassword": {
+      "value": "Enabled",
+      "path": "User Configuration\\Administrative Templates\\Control Panel\\Personalization",
+      "severity": "medium",
+      "description": "Password protect the screen saver",
+      "recommendation": "Enable password protection for screen saver"
+    }
+  }
+}

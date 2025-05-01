@@ -1,0 +1,339 @@
+{
+  "domain": "example.com",
+  "timestamp": "2025-04-30T16:00:00Z",
+  "summary": {
+    "total_checks": 120,
+    "passed": 85,
+    "failed": 25,
+    "warning": 5,
+    "not_applicable": 5,
+    "compliance_percentage": 71
+  },
+  "domain_controllers": [
+    {
+      "name": "DC01",
+      "dNSHostName": "dc01.example.com",
+      "os": "Windows Server",
+      "os_version": "2019",
+      "results": [
+        {
+          "setting_name": "Password Complexity",
+          "setting_path": "Computer Configuration\\Windows Settings\\Security Settings\\Account Policies\\Password Policy",
+          "baseline_value": "Enabled",
+          "actual_value": "Enabled",
+          "status": "pass",
+          "severity": "high"
+        },
+        {
+          "setting_name": "Minimum Password Length",
+          "setting_path": "Computer Configuration\\Windows Settings\\Security Settings\\Account Policies\\Password Policy",
+          "baseline_value": "14",
+          "actual_value": "8",
+          "status": "fail",
+          "severity": "high"
+        },
+        {
+          "setting_name": "Account Lockout Threshold",
+          "setting_path": "Computer Configuration\\Windows Settings\\Security Settings\\Account Policies\\Account Lockout Policy",
+          "baseline_value": "5",
+          "actual_value": "0",
+          "status": "fail",
+          "severity": "high"
+        },
+        {
+          "setting_name": "Audit Account Logon Events",
+          "setting_path": "Computer Configuration\\Windows Settings\\Security Settings\\Local Policies\\Audit Policy",
+          "baseline_value": "Success, Failure",
+          "actual_value": "Success",
+          "status": "fail",
+          "severity": "medium"
+        }
+      ]
+    },
+    {
+      "name": "DC02",
+      "dNSHostName": "dc02.example.com",
+      "os": "Windows Server",
+      "os_version": "2016",
+      "results": [
+        {
+          "setting_name": "Password Complexity",
+          "setting_path": "Computer Configuration\\Windows Settings\\Security Settings\\Account Policies\\Password Policy",
+          "baseline_value": "Enabled",
+          "actual_value": "Enabled",
+          "status": "pass",
+          "severity": "high"
+        },
+        {
+          "setting_name": "Minimum Password Length",
+          "setting_path": "Computer Configuration\\Windows Settings\\Security Settings\\Account Policies\\Password Policy",
+          "baseline_value": "14",
+          "actual_value": "12",
+          "status": "fail",
+          "severity": "medium"
+        },
+        {
+          "setting_name": "Account Lockout Threshold",
+          "setting_path": "Computer Configuration\\Windows Settings\\Security Settings\\Account Policies\\Account Lockout Policy",
+          "baseline_value": "5",
+          "actual_value": "3",
+          "status": "pass",
+          "severity": "high"
+        },
+        {
+          "setting_name": "Audit Account Logon Events",
+          "setting_path": "Computer Configuration\\Windows Settings\\Security Settings\\Local Policies\\Audit Policy",
+          "baseline_value": "Success, Failure",
+          "actual_value": "Success, Failure",
+          "status": "pass",
+          "severity": "medium"
+        }
+      ]
+    }
+  ],
+  "computers": [
+    {
+      "name": "CLIENT01",
+      "dNSHostName": "client01.example.com",
+      "operatingSystem": "Windows 10 Enterprise",
+      "operatingSystemVersion": "10.0 (19044)",
+      "results": [
+        {
+          "setting_name": "User Account Control",
+          "setting_path": "Computer Configuration\\Windows Settings\\Security Settings\\Local Policies\\Security Options",
+          "baseline_value": "Enabled",
+          "actual_value": "Enabled",
+          "status": "pass",
+          "severity": "high"
+        },
+        {
+          "setting_name": "Windows Firewall",
+          "setting_path": "Computer Configuration\\Windows Settings\\Security Settings\\Windows Firewall with Advanced Security",
+          "baseline_value": "Enabled",
+          "actual_value": "Disabled",
+          "status": "fail",
+          "severity": "high"
+        },
+        {
+          "setting_name": "BitLocker",
+          "setting_path": "Computer Configuration\\Windows Settings\\Security Settings\\BitLocker Drive Encryption",
+          "baseline_value": "Enabled",
+          "actual_value": "Disabled",
+          "status": "fail",
+          "severity": "high"
+        }
+      ]
+    },
+    {
+      "name": "CLIENT02",
+      "dNSHostName": "client02.example.com",
+      "operatingSystem": "Windows 11 Enterprise",
+      "operatingSystemVersion": "10.0 (22000)",
+      "results": [
+        {
+          "setting_name": "User Account Control",
+          "setting_path": "Computer Configuration\\Windows Settings\\Security Settings\\Local Policies\\Security Options",
+          "baseline_value": "Enabled",
+          "actual_value": "Enabled",
+          "status": "pass",
+          "severity": "high"
+        },
+        {
+          "setting_name": "Windows Firewall",
+          "setting_path": "Computer Configuration\\Windows Settings\\Security Settings\\Windows Firewall with Advanced Security",
+          "baseline_value": "Enabled",
+          "actual_value": "Enabled",
+          "status": "pass",
+          "severity": "high"
+        },
+        {
+          "setting_name": "BitLocker",
+          "setting_path": "Computer Configuration\\Windows Settings\\Security Settings\\BitLocker Drive Encryption",
+          "baseline_value": "Enabled",
+          "actual_value": "Enabled",
+          "status": "pass",
+          "severity": "high"
+        }
+      ]
+    },
+    {
+      "name": "CLIENT03",
+      "dNSHostName": "client03.example.com",
+      "operatingSystem": "Windows 10 Enterprise",
+      "operatingSystemVersion": "10.0 (19044)",
+      "results": [
+        {
+          "setting_name": "User Account Control",
+          "setting_path": "Computer Configuration\\Windows Settings\\Security Settings\\Local Policies\\Security Options",
+          "baseline_value": "Enabled",
+          "actual_value": "Enabled",
+          "status": "pass",
+          "severity": "high"
+        },
+        {
+          "setting_name": "Windows Firewall",
+          "setting_path": "Computer Configuration\\Windows Settings\\Security Settings\\Windows Firewall with Advanced Security",
+          "baseline_value": "Enabled",
+          "actual_value": "Enabled",
+          "status": "pass",
+          "severity": "high"
+        },
+        {
+          "setting_name": "BitLocker",
+          "setting_path": "Computer Configuration\\Windows Settings\\Security Settings\\BitLocker Drive Encryption",
+          "baseline_value": "Enabled",
+          "actual_value": "Disabled",
+          "status": "fail",
+          "severity": "high"
+        }
+      ]
+    }
+  ],
+  "domain_policies": {
+    "password_policy": {
+      "results": [
+        {
+          "setting_name": "Enforce password history",
+          "baseline_value": "24 passwords remembered",
+          "actual_value": "5 passwords remembered",
+          "status": "fail",
+          "severity": "medium"
+        },
+        {
+          "setting_name": "Maximum password age",
+          "baseline_value": "60 days",
+          "actual_value": "90 days",
+          "status": "fail",
+          "severity": "low"
+        },
+        {
+          "setting_name": "Minimum password age",
+          "baseline_value": "1 day",
+          "actual_value": "0 days",
+          "status": "fail",
+          "severity": "low"
+        },
+        {
+          "setting_name": "Minimum password length",
+          "baseline_value": "14 characters",
+          "actual_value": "8 characters",
+          "status": "fail",
+          "severity": "high"
+        },
+        {
+          "setting_name": "Password must meet complexity requirements",
+          "baseline_value": "Enabled",
+          "actual_value": "Enabled",
+          "status": "pass",
+          "severity": "high"
+        }
+      ]
+    },
+    "lockout_policy": {
+      "results": [
+        {
+          "setting_name": "Account lockout duration",
+          "baseline_value": "15 minutes",
+          "actual_value": "30 minutes",
+          "status": "pass",
+          "severity": "medium"
+        },
+        {
+          "setting_name": "Account lockout threshold",
+          "baseline_value": "5 invalid logon attempts",
+          "actual_value": "0 invalid logon attempts",
+          "status": "fail",
+          "severity": "high"
+        },
+        {
+          "setting_name": "Reset account lockout counter after",
+          "baseline_value": "15 minutes",
+          "actual_value": "30 minutes",
+          "status": "pass",
+          "severity": "low"
+        }
+      ]
+    },
+    "audit_policy": {
+      "results": [
+        {
+          "setting_name": "Audit account logon events",
+          "baseline_value": "Success, Failure",
+          "actual_value": "Success",
+          "status": "fail",
+          "severity": "medium"
+        },
+        {
+          "setting_name": "Audit account management",
+          "baseline_value": "Success, Failure",
+          "actual_value": "Success, Failure",
+          "status": "pass",
+          "severity": "medium"
+        },
+        {
+          "setting_name": "Audit directory service access",
+          "baseline_value": "Success, Failure",
+          "actual_value": "No Auditing",
+          "status": "fail",
+          "severity": "high"
+        },
+        {
+          "setting_name": "Audit logon events",
+          "baseline_value": "Success, Failure",
+          "actual_value": "Success, Failure",
+          "status": "pass",
+          "severity": "high"
+        },
+        {
+          "setting_name": "Audit object access",
+          "baseline_value": "Success, Failure",
+          "actual_value": "No Auditing",
+          "status": "fail",
+          "severity": "medium"
+        }
+      ]
+    }
+  },
+  "recommendations": [
+    {
+      "target": "Domain Password Policy",
+      "recommendation": "Increase minimum password length to at least 14 characters",
+      "severity": "high"
+    },
+    {
+      "target": "Domain Password Policy",
+      "recommendation": "Increase password history to at least 24 passwords",
+      "severity": "medium"
+    },
+    {
+      "target": "Domain Lockout Policy",
+      "recommendation": "Configure account lockout threshold to 5 or fewer invalid attempts",
+      "severity": "high"
+    },
+    {
+      "target": "Domain Audit Policy",
+      "recommendation": "Enable auditing of directory service access",
+      "severity": "high"
+    },
+    {
+      "target": "DC01",
+      "recommendation": "Configure account lockout threshold",
+      "severity": "high"
+    },
+    {
+      "target": "CLIENT01",
+      "recommendation": "Enable Windows Firewall",
+      "severity": "high"
+    },
+    {
+      "target": "CLIENT01",
+      "recommendation": "Enable BitLocker Drive Encryption",
+      "severity": "high"
+    },
+    {
+      "target": "CLIENT03",
+      "recommendation": "Enable BitLocker Drive Encryption",
+      "severity": "high"
+    }
+  ]
+}
