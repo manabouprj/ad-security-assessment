@@ -1,0 +1,40 @@
+{
+  "domain": "example.com",
+  "server": "dc.example.com",
+  "username": "admin",
+  "password": "",
+  "use_ssl": true,
+  "verify_ssl": true,
+  "port": 636,
+  "sct_baselines_path": "baselines",
+  "max_computers_to_assess": 100,
+  "assessment_timeout": 3600,
+  "report": {
+    "company_name": "Your Company",
+    "logo_path": "",
+    "include_recommendations": true,
+    "include_charts": true,
+    "include_executive_summary": true
+  },
+  "logging": {
+    "level": "INFO",
+    "file_rotation": true,
+    "max_log_files": 5,
+    "max_file_size_mb": 10
+  },
+  "security": {
+    "encrypt_credentials": true,
+    "store_password_hash_only": true,
+    "session_timeout_minutes": 30
+  },
+  "advanced": {
+    "parallel_assessment": true,
+    "max_threads": 10,
+    "connection_timeout": 30,
+    "retry_attempts": 3,
+    "retry_delay": 5
+  },
+  "mock_mode": false,
+  "output_dir": "reports",
+  "verbose": false
+} 
