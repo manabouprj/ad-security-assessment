@@ -1,7 +1,7 @@
 {
   "domain": "example.com",
   "server": "dc.example.com",
-  "username": "admin",
+  "username": "service-account",
   "password": "",
   "use_ssl": true,
   "verify_ssl": true,
@@ -14,27 +14,54 @@
     "logo_path": "",
     "include_recommendations": true,
     "include_charts": true,
-    "include_executive_summary": true
+    "include_executive_summary": true,
+    "report_format": "pdf",
+    "custom_templates": {
+      "pdf": "templates/custom_pdf.html",
+      "email": "templates/custom_email.html"
+    }
   },
   "logging": {
     "level": "INFO",
     "file_rotation": true,
     "max_log_files": 5,
-    "max_file_size_mb": 10
+    "max_file_size_mb": 10,
+    "log_directory": "logs",
+    "audit_logging": true
   },
   "security": {
     "encrypt_credentials": true,
     "store_password_hash_only": true,
-    "session_timeout_minutes": 30
+    "session_timeout_minutes": 30,
+    "max_login_attempts": 5,
+    "lockout_duration_minutes": 15,
+    "password_requirements": {
+      "min_length": 12,
+      "require_uppercase": 2,
+      "require_lowercase": 3,
+      "require_numbers": 2,
+      "require_special": 1
+    },
+    "allowed_ip_ranges": [],
+    "cors_origins": []
   },
   "advanced": {
     "parallel_assessment": true,
     "max_threads": 10,
     "connection_timeout": 30,
     "retry_attempts": 3,
-    "retry_delay": 5
+    "retry_delay": 5,
+    "cache_results": true,
+    "cache_duration_hours": 24
   },
   "mock_mode": false,
   "output_dir": "reports",
-  "verbose": false
+  "verbose": false,
+  "api": {
+    "enable_api": true,
+    "api_port": 5000,
+    "api_host": "0.0.0.0",
+    "require_https": true,
+    "token_expiration_hours": 24
+  }
 } 
