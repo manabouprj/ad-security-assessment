@@ -25,8 +25,12 @@ cd ad-security-assessment
 python -m venv venv
 .\venv\Scripts\Activate.ps1  # On Windows PowerShell
 
-# Install dependencies
-pip install -r requirements.txt
+# Install package and dependencies
+python -m pip install --upgrade pip
+pip install -e .
+
+# Set up package structure
+python setup_package.py
 
 # Configure the application
 copy config.example.json config.json
@@ -47,9 +51,9 @@ Default credentials:
 
 ## Prerequisites
 - Python 3.8 or higher
-- Node.js 14.x or higher
 - Windows environment (for AD integration)
 - Network access to domain controllers (for production use)
+- Local administrator rights (for installation)
 
 ## Security Considerations
 
