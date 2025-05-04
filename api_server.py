@@ -12,7 +12,7 @@ import logging
 import argparse
 import subprocess
 import sys
-from datetime import datetime
+from datetime import datetime, timedelta
 from flask import Flask, jsonify, request, send_file, Response, session
 from flask_cors import CORS
 import src.core.security_assessment as security_assessment
@@ -23,6 +23,13 @@ from functools import wraps
 import hashlib
 import re
 from werkzeug.security import generate_password_hash, check_password_hash
+from pathlib import Path
+import time
+
+# Add the project root directory to Python path
+project_root = os.path.dirname(os.path.abspath(__file__))
+if project_root not in sys.path:
+    sys.path.append(project_root)
 
 # Configure logging
 logging.basicConfig(
@@ -33,64 +40,106 @@ logger = logging.getLogger(__name__)
 
 # Initialize Flask app
 app = Flask(__name__)
-app.secret_key = os.urandom(24)  # Generate a random secret key
-CORS(app, supports_credentials=True)  # Enable CORS with credentials
+
+# Load secret key from file or create a new one
+SECRET_KEY_FILE = Path(os.path.dirname(os.path.abspath(__file__))) / '.secret_key'
+try:
+    if SECRET_KEY_FILE.exists():
+        app.secret_key = SECRET_KEY_FILE.read_bytes()
+    else:
+        app.secret_key = os.urandom(24)
+        SECRET_KEY_FILE.write_bytes(app.secret_key)
+except Exception as e:
+    logger.error(f"Error handling secret key: {e}")
+    app.secret_key = os.urandom(24)  # Fallback to random key
+
+# Session configuration
+app.config.update(
+    SESSION_COOKIE_SECURE=True,
+    SESSION_COOKIE_HTTPONLY=True,
+    SESSION_COOKIE_SAMESITE='Lax',
+    PERMANENT_SESSION_LIFETIME=timedelta(hours=1)
+)
+
+CORS(app, supports_credentials=True)
 
 # Global variables
 config_manager = ConfigManager('config.json')
 assessment_results = None
 last_assessment_time = None
 
-# Add authentication configuration
-AUTH_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'auth_config.json')
+# Authentication configuration
+AUTH_FILE = Path(os.path.dirname(os.path.abspath(__file__))) / 'auth_config.json'
 DEFAULT_USERNAME = 'Orunmila'
+MAX_LOGIN_ATTEMPTS = 5
+LOGIN_TIMEOUT = 300  # 5 minutes in seconds
+
+# Store login attempts
+login_attempts = {}
 
 def load_auth_config():
     """Load authentication configuration from file"""
     try:
-        if os.path.exists(AUTH_FILE):
+        if AUTH_FILE.exists():
             with open(AUTH_FILE, 'r') as f:
                 config = json.load(f)
-                # If the file is empty or doesn't have required fields
                 if not config or not isinstance(config, dict):
-                    config = {
-                        'username': DEFAULT_USERNAME,
-                        'password_hash': None,
-                        'password_changed': False
-                    }
-                # Ensure the config has all required fields
-                if 'password_hash' not in config:
-                    config['password_hash'] = None
-                if 'password_changed' not in config:
-                    config['password_changed'] = False
-                if 'username' not in config:
-                    config['username'] = DEFAULT_USERNAME
+                    config = create_default_auth_config()
+                # Ensure all required fields exist
+                for field in ['username', 'password_hash', 'password_changed']:
+                    if field not in config:
+                        config.update(create_default_auth_config())
+                        break
                 return config
         else:
-            # Create new auth config without a password
-            config = {
-                'username': DEFAULT_USERNAME,
-                'password_hash': None,
-                'password_changed': False
-            }
-            # Ensure the directory exists
-            os.makedirs(os.path.dirname(AUTH_FILE), exist_ok=True)
+            config = create_default_auth_config()
             save_auth_config(config)
             return config
     except Exception as e:
-        print(f"Error loading auth config: {e}")
-        return None
+        logger.error(f"Error loading auth config: {e}")
+        return create_default_auth_config()
+
+def create_default_auth_config():
+    """Create default authentication configuration"""
+    return {
+        'username': DEFAULT_USERNAME,
+        'password_hash': None,
+        'password_changed': False
+    }
 
 def save_auth_config(config):
     """Save authentication configuration to file"""
     try:
-        # Ensure the directory exists
-        os.makedirs(os.path.dirname(AUTH_FILE), exist_ok=True)
+        AUTH_FILE.parent.mkdir(parents=True, exist_ok=True)
         with open(AUTH_FILE, 'w') as f:
             json.dump(config, f, indent=2)
-        print(f"Auth config saved to {AUTH_FILE}")  # Debug log
+        # Set secure file permissions
+        if os.name != 'nt':  # Not Windows
+            os.chmod(AUTH_FILE, 0o600)
+        logger.info(f"Auth config saved to {AUTH_FILE}")
     except Exception as e:
-        print(f"Error saving auth config: {e}")
+        logger.error(f"Error saving auth config: {e}")
+        raise
+
+def check_login_attempts(username):
+    """Check if user has exceeded maximum login attempts"""
+    now = time.time()
+    if username in login_attempts:
+        attempts, timestamp = login_attempts[username]
+        if attempts >= MAX_LOGIN_ATTEMPTS:
+            if now - timestamp < LOGIN_TIMEOUT:
+                return False
+            login_attempts[username] = (0, now)
+    return True
+
+def record_login_attempt(username, success):
+    """Record login attempt for rate limiting"""
+    now = time.time()
+    if success:
+        login_attempts.pop(username, None)
+    else:
+        attempts, _ = login_attempts.get(username, (0, now))
+        login_attempts[username] = (attempts + 1, now)
 
 def validate_password(password):
     """Validate password meets requirements"""
@@ -126,92 +175,110 @@ def login():
         if not username or not password:
             return jsonify({'error': 'Username and password are required'}), 400
 
+        # Check login attempts
+        if not check_login_attempts(username):
+            return jsonify({
+                'error': 'Too many login attempts. Please try again later.'
+            }), 429
+
         auth_config = load_auth_config()
         if not auth_config:
-            return jsonify({'error': 'Authentication configuration error'}), 500
+            logger.error("Failed to load authentication configuration")
+            return jsonify({'error': 'Internal server error'}), 500
 
         if username != auth_config['username']:
-            return jsonify({'error': 'Invalid username'}), 401
+            record_login_attempt(username, False)
+            return jsonify({'error': 'Invalid credentials'}), 401
 
-        # If this is the first login (no password set)
+        # First login handling
         if auth_config['password_hash'] is None:
-            # Validate the new password
             is_valid, error_message = validate_password(password)
             if not is_valid:
                 return jsonify({'error': error_message}), 400
 
-            # Hash and save the new password
             auth_config['password_hash'] = generate_password_hash(password)
             auth_config['password_changed'] = True
             save_auth_config(auth_config)
             
-            # Set session variables
+            session.permanent = True
             session['authenticated'] = True
             session['username'] = username
             session['password_changed'] = True
             
+            record_login_attempt(username, True)
             return jsonify({
                 'message': 'Password created successfully',
                 'password_changed': True
             }), 200
 
-        # Normal login with existing password
+        # Normal login
         if check_password_hash(auth_config['password_hash'], password):
+            session.permanent = True
             session['authenticated'] = True
             session['username'] = username
             session['password_changed'] = auth_config['password_changed']
+            session['last_activity'] = datetime.utcnow().timestamp()
+            
+            record_login_attempt(username, True)
             return jsonify({
                 'message': 'Login successful',
                 'password_changed': auth_config['password_changed']
             }), 200
-        else:
-            print(f"Password mismatch. Stored hash: {auth_config['password_hash']}")
-            return jsonify({'error': 'Invalid password'}), 401
+        
+        record_login_attempt(username, False)
+        return jsonify({'error': 'Invalid credentials'}), 401
 
     except Exception as e:
-        print(f"Login error: {e}")
-        return jsonify({'error': 'Login failed'}), 500
+        logger.error(f"Login error: {str(e)}")
+        return jsonify({'error': 'Internal server error'}), 500
 
 @app.route('/api/auth/logout', methods=['POST'])
 def logout():
     """Handle user logout"""
     try:
+        username = session.get('username')
+        if username:
+            login_attempts.pop(username, None)
         session.clear()
         return jsonify({'message': 'Logged out successfully'}), 200
     except Exception as e:
-        print(f"Logout error: {e}")
-        return jsonify({'error': 'Logout failed'}), 500
+        logger.error(f"Logout error: {str(e)}")
+        return jsonify({'error': 'Internal server error'}), 500
 
 @app.route('/api/auth/change-password', methods=['POST'])
 @login_required
 def change_password():
     """Handle password change."""
-    data = request.get_json()
-    current_password = data.get('current_password')
-    new_password = data.get('new_password')
-    
-    if not current_password or not new_password:
-        return jsonify({'error': 'Current and new passwords are required'}), 400
-    
-    auth_config = load_auth_config()
-    
-    if check_password_hash(auth_config['password_hash'], current_password):
-        # Validate new password
-        is_valid, error_message = validate_password(new_password)
-        if not is_valid:
-            return jsonify({'error': error_message}), 400
+    try:
+        data = request.get_json()
+        current_password = data.get('current_password')
+        new_password = data.get('new_password')
         
-        # Update password
-        auth_config['password_hash'] = generate_password_hash(new_password)
-        auth_config['password_changed'] = True
-        save_auth_config(auth_config)
+        if not current_password or not new_password:
+            return jsonify({'error': 'Current and new passwords are required'}), 400
         
-        # Update session
-        session['password_changed'] = True
+        auth_config = load_auth_config()
         
-        return jsonify({'message': 'Password changed successfully'})
-    else:
-        return jsonify({'error': 'Current password is incorrect'}), 401
+        if check_password_hash(auth_config['password_hash'], current_password):
+            # Validate new password
+            is_valid, error_message = validate_password(new_password)
+            if not is_valid:
+                return jsonify({'error': error_message}), 400
+            
+            # Update password
+            auth_config['password_hash'] = generate_password_hash(new_password)
+            auth_config['password_changed'] = True
+            save_auth_config(auth_config)
+            
+            # Invalidate all sessions
+            session.clear()
+            
+            return jsonify({'message': 'Password changed successfully. Please login again.'}), 200
+        else:
+            return jsonify({'error': 'Current password is incorrect'}), 401
+    except Exception as e:
+        logger.error(f"Password change error: {str(e)}")
+        return jsonify({'error': 'Internal server error'}), 500
 
 @app.route('/api/auth/status', methods=['GET'])
 def auth_status():
@@ -219,11 +286,25 @@ def auth_status():
     try:
         auth_config = load_auth_config()
         if not auth_config:
+            logger.error("Failed to load authentication configuration")
             return jsonify({
                 'authenticated': False,
                 'username': None,
-                'password_changed': False
-            })
+                'password_changed': False,
+                'error': 'Configuration error'
+            }), 500
+
+        # Check session expiry
+        if session.get('authenticated'):
+            last_activity = session.get('last_activity')
+            if last_activity and time.time() - last_activity > app.config['PERMANENT_SESSION_LIFETIME'].total_seconds():
+                session.clear()
+                return jsonify({
+                    'authenticated': False,
+                    'username': None,
+                    'password_changed': False,
+                    'error': 'Session expired'
+                })
 
         return jsonify({
             'authenticated': session.get('authenticated', False),
@@ -231,12 +312,67 @@ def auth_status():
             'password_changed': session.get('password_changed', False)
         })
     except Exception as e:
-        print(f"Auth status error: {e}")
+        logger.error(f"Auth status error: {str(e)}")
         return jsonify({
             'authenticated': False,
             'username': None,
-            'password_changed': False
+            'password_changed': False,
+            'error': 'Internal server error'
         }), 500
+
+def update_session_activity():
+    """Update last activity timestamp in session"""
+    if session.get('authenticated'):
+        session['last_activity'] = time.time()
+
+@app.before_request
+def before_request():
+    """Middleware to handle requests before they are processed"""
+    try:
+        # Skip for static files and health check
+        if request.endpoint and 'static' in request.endpoint or request.path == '/api/health':
+            return
+
+        # Update session activity
+        update_session_activity()
+
+        # Check session expiry for authenticated routes
+        if getattr(request.endpoint, 'login_required', False):
+            if not session.get('authenticated'):
+                return jsonify({'error': 'Authentication required'}), 401
+            
+            last_activity = session.get('last_activity')
+            if last_activity and time.time() - last_activity > app.config['PERMANENT_SESSION_LIFETIME'].total_seconds():
+                session.clear()
+                return jsonify({'error': 'Session expired'}), 401
+
+    except Exception as e:
+        logger.error(f"Before request error: {str(e)}")
+        return jsonify({'error': 'Internal server error'}), 500
+
+@app.after_request
+def after_request(response):
+    """Middleware to handle responses after they are processed"""
+    try:
+        # Add security headers
+        response.headers['X-Content-Type-Options'] = 'nosniff'
+        response.headers['X-Frame-Options'] = 'DENY'
+        response.headers['X-XSS-Protection'] = '1; mode=block'
+        response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
+        
+        return response
+    except Exception as e:
+        logger.error(f"After request error: {str(e)}")
+        return response
+
+@app.errorhandler(Exception)
+def handle_error(error):
+    """Global error handler"""
+    logger.error(f"Unhandled error: {str(error)}")
+    return jsonify({
+        'error': 'Internal server error',
+        'message': 'An unexpected error occurred'
+    }), 500
 
 @app.route('/api/assessment/results', methods=['GET'])
 @login_required
@@ -261,189 +397,168 @@ def get_assessment_results():
 @app.route('/api/assessment/run', methods=['POST'])
 @login_required
 def run_assessment():
-    """Run a new security assessment with the provided configuration."""
-    global assessment_results, last_assessment_time
-    
+    """Run a new security assessment."""
     try:
-        # Get configuration from request
-        config_data = request.json
+        global assessment_results, last_assessment_time
         
-        # Update configuration
-        if config_data:
-            config_manager.update_config(config_data)
-        
-        # Get the current configuration
-        config = config_manager.get_config()
-        
-        # Initialize AD connector
-        ad_connector = ADConnector(config)
-        
+        # Validate request
+        data = request.get_json()
+        if not data:
+            return jsonify({'error': 'No configuration provided'}), 400
+
         # Run assessment
-        logger.info("Starting security assessment")
-        assessment = security_assessment.SecurityAssessment(ad_connector)
-        assessment_results = assessment.run_assessment()
-        last_assessment_time = datetime.now()
+        assessment = security_assessment.SecurityAssessment()
+        results = assessment.run()
         
-        # Save results to file
-        results_dir = os.path.join(os.path.dirname(__file__), 'results')
-        os.makedirs(results_dir, exist_ok=True)
-        
-        results_file = os.path.join(
-            results_dir, 
-            f"assessment_{last_assessment_time.strftime('%Y%m%d_%H%M%S')}.json"
-        )
-        
-        with open(results_file, 'w') as f:
-            json.dump(assessment_results, f, indent=2)
-        
-        logger.info(f"Assessment completed and saved to {results_file}")
+        if not results:
+            return jsonify({'error': 'Assessment failed to produce results'}), 500
+            
+        # Store results
+        assessment_results = results
+        last_assessment_time = datetime.utcnow()
         
         return jsonify({
-            'success': True,
             'message': 'Assessment completed successfully',
+            'results': results,
             'timestamp': last_assessment_time.isoformat()
         })
         
     except Exception as e:
-        logger.error(f"Error running assessment: {str(e)}", exc_info=True)
+        logger.error(f"Assessment error: {str(e)}")
         return jsonify({
-            'error': 'Failed to run assessment',
-            'message': str(e)
+            'error': 'Assessment failed',
+            'message': 'Failed to complete the security assessment'
         }), 500
 
 @app.route('/api/domain-controllers', methods=['GET'])
+@login_required
 def get_domain_controllers():
-    """Get domain controller information."""
-    global assessment_results
-    
-    if assessment_results is None or 'domain_controllers' not in assessment_results:
+    """Get list of domain controllers."""
+    try:
+        connector = ADConnector()
+        controllers = connector.get_domain_controllers()
+        return jsonify({'domain_controllers': controllers})
+    except Exception as e:
+        logger.error(f"Failed to get domain controllers: {str(e)}")
         return jsonify({
-            'error': 'No domain controller data available',
-            'message': 'Run an assessment first'
-        }), 404
-    
-    return jsonify(assessment_results['domain_controllers'])
+            'error': 'Failed to retrieve domain controllers',
+            'message': 'Could not connect to Active Directory'
+        }), 500
 
 @app.route('/api/computers', methods=['GET'])
+@login_required
 def get_computers():
-    """Get computer information."""
-    global assessment_results
-    
-    if assessment_results is None or 'computers' not in assessment_results:
+    """Get list of computers in the domain."""
+    try:
+        connector = ADConnector()
+        computers = connector.get_computers()
+        return jsonify({'computers': computers})
+    except Exception as e:
+        logger.error(f"Failed to get computers: {str(e)}")
         return jsonify({
-            'error': 'No computer data available',
-            'message': 'Run an assessment first'
-        }), 404
-    
-    return jsonify(assessment_results['computers'])
+            'error': 'Failed to retrieve computers',
+            'message': 'Could not connect to Active Directory'
+        }), 500
 
 @app.route('/api/domain-policies', methods=['GET'])
+@login_required
 def get_domain_policies():
-    """Get domain policy information."""
-    global assessment_results
-    
-    if assessment_results is None or 'domain_policies' not in assessment_results:
+    """Get domain policies."""
+    try:
+        connector = ADConnector()
+        policies = connector.get_domain_policies()
+        return jsonify({'policies': policies})
+    except Exception as e:
+        logger.error(f"Failed to get domain policies: {str(e)}")
         return jsonify({
-            'error': 'No domain policy data available',
-            'message': 'Run an assessment first'
-        }), 404
-    
-    return jsonify(assessment_results['domain_policies'])
+            'error': 'Failed to retrieve domain policies',
+            'message': 'Could not connect to Active Directory'
+        }), 500
 
 @app.route('/api/config', methods=['GET'])
+@login_required
 def get_config():
-    """Get the current configuration."""
-    config = config_manager.get_config()
-    
-    # Don't return password in the response
-    if 'password' in config:
-        config = {**config}  # Create a copy
-        del config['password']
-    
-    return jsonify(config)
+    """Get current configuration."""
+    try:
+        config = config_manager.get_config()
+        return jsonify({'config': config})
+    except Exception as e:
+        logger.error(f"Failed to get configuration: {str(e)}")
+        return jsonify({
+            'error': 'Failed to retrieve configuration',
+            'message': 'Could not load configuration file'
+        }), 500
 
 @app.route('/api/config', methods=['PUT'])
+@login_required
 def update_config():
-    """Update the configuration."""
+    """Update configuration."""
     try:
-        config_data = request.json
-        config_manager.update_config(config_data)
-        
-        # Don't return password in the response
-        config = config_manager.get_config()
-        if 'password' in config:
-            config = {**config}  # Create a copy
-            del config['password']
-        
+        data = request.get_json()
+        if not data:
+            return jsonify({'error': 'No configuration provided'}), 400
+            
+        # Validate configuration
+        if not isinstance(data, dict):
+            return jsonify({'error': 'Invalid configuration format'}), 400
+            
+        config_manager.update_config(data)
         return jsonify({
-            'success': True,
             'message': 'Configuration updated successfully',
-            'config': config
+            'config': data
         })
-        
     except Exception as e:
-        logger.error(f"Error updating configuration: {str(e)}", exc_info=True)
+        logger.error(f"Failed to update configuration: {str(e)}")
         return jsonify({
             'error': 'Failed to update configuration',
-            'message': str(e)
+            'message': 'Could not save configuration file'
         }), 500
 
 @app.route('/api/reports/<report_type>', methods=['GET'])
+@login_required
 def get_report(report_type):
-    """Generate and download a report."""
-    global assessment_results, last_assessment_time
-    
-    if assessment_results is None:
-        return jsonify({
-            'error': 'No assessment results available',
-            'message': 'Run an assessment first'
-        }), 404
-    
+    """Generate and return a report."""
     try:
-        # Create reports directory if it doesn't exist
-        reports_dir = os.path.join(os.path.dirname(__file__), 'reports')
-        os.makedirs(reports_dir, exist_ok=True)
-        
-        # Generate timestamp for filename
-        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-        
-        if report_type == 'csv':
-            # Generate CSV report
-            report_file = os.path.join(reports_dir, f"assessment_report_{timestamp}.csv")
-            report_generator = ReportGenerator(assessment_results)
-            report_generator.generate_csv_report(report_file)
-            
-            return send_file(
-                report_file,
-                as_attachment=True,
-                download_name=f"ad_assessment_{timestamp}.csv",
-                mimetype='text/csv'
-            )
-            
-        elif report_type == 'pdf':
-            # Generate PDF report
-            report_file = os.path.join(reports_dir, f"assessment_report_{timestamp}.pdf")
-            report_generator = ReportGenerator(assessment_results)
-            report_generator.generate_pdf_report(report_file)
-            
-            return send_file(
-                report_file,
-                as_attachment=True,
-                download_name=f"ad_assessment_{timestamp}.pdf",
-                mimetype='application/pdf'
-            )
-            
-        else:
+        if not assessment_results:
             return jsonify({
-                'error': 'Invalid report type',
-                'message': 'Report type must be "csv" or "pdf"'
+                'error': 'No assessment results available',
+                'message': 'Run an assessment first'
             }), 400
             
+        # Validate report type
+        valid_report_types = ['pdf', 'json', 'csv']
+        if report_type not in valid_report_types:
+            return jsonify({
+                'error': 'Invalid report type',
+                'message': f'Supported types: {", ".join(valid_report_types)}'
+            }), 400
+            
+        generator = ReportGenerator(assessment_results)
+        
+        if report_type == 'pdf':
+            report_path = generator.generate_pdf()
+            return send_file(
+                report_path,
+                mimetype='application/pdf',
+                as_attachment=True,
+                download_name=f'security_assessment_{datetime.now().strftime("%Y%m%d_%H%M%S")}.pdf'
+            )
+        elif report_type == 'json':
+            return jsonify(assessment_results)
+        else:  # csv
+            report_path = generator.generate_csv()
+            return send_file(
+                report_path,
+                mimetype='text/csv',
+                as_attachment=True,
+                download_name=f'security_assessment_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv'
+            )
+            
     except Exception as e:
-        logger.error(f"Error generating {report_type} report: {str(e)}", exc_info=True)
+        logger.error(f"Failed to generate {report_type} report: {str(e)}")
         return jsonify({
             'error': f'Failed to generate {report_type} report',
-            'message': str(e)
+            'message': 'Could not generate the requested report'
         }), 500
 
 @app.route('/api/assessment/run-interactive', methods=['POST'])
