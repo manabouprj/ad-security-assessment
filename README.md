@@ -10,72 +10,46 @@ A comprehensive web-based tool for conducting security assessments of Active Dir
 - 🔄 Mock mode for testing and development
 - 📝 Comprehensive logging and audit trails
 
-## Prerequisites
-- Python 3.8 or higher
-- Node.js 14.x or higher
-- Windows environment (for AD integration)
-- Network access to domain controllers (for production use)
+## Quick Start
 
-## Quick Start Guide
+For detailed setup and running instructions, please see [GETTING_STARTED.md](GETTING_STARTED.md).
 
-### 1. Installation
+### Basic Setup
 
 ```bash
 # Clone the repository
 git clone https://github.com/manabouprj/ad-security-assessment.git
 cd ad-security-assessment
 
-# Install Python dependencies
+# Create and activate virtual environment
+python -m venv venv
+.\venv\Scripts\Activate.ps1  # On Windows PowerShell
+
+# Install dependencies
 pip install -r requirements.txt
 
 # Configure the application
-cp config.example.json config.json
+copy config.example.json config.json
 ```
 
-### 2. Configuration
-
-Edit `config.json` with your environment settings:
-```json
-{
-  "domain": "your-domain.com",
-  "server": "dc.your-domain.com",
-  "username": "service-account",
-  "password": "",
-  "mock_mode": true,  # Set to false for production
-  "output_dir": "reports",
-  "verbose": true
-}
-```
-
-### 3. Starting the Application
+### Running the Application
 
 ```bash
-# Start the Flask backend server
-python api_server.py
+# Start the API server (recommended method)
+python run_api.py
 ```
 
-The server will start on http://localhost:5000
+Access the web interface at http://localhost:5000
 
-### 4. First-Time Setup
+Default credentials:
+- Username: "Orunmila"
+- You'll be prompted to create a secure password on first login
 
-1. Access the web interface at http://localhost:5000
-2. Default username: "Orunmila"
-3. Create a secure password on first login that meets these requirements:
-   - Minimum 12 characters
-   - At least 2 uppercase letters
-   - At least 3 lowercase letters
-   - At least 2 numbers
-   - At least 1 special character
-
-### 5. Running Assessments
-
-1. Log in to the web interface
-2. Configure assessment parameters:
-   - Target domain controllers
-   - Assessment scope
-   - Security baseline selection
-3. Click "Start Assessment" to begin
-4. View real-time results and generate reports
+## Prerequisites
+- Python 3.8 or higher
+- Node.js 14.x or higher
+- Windows environment (for AD integration)
+- Network access to domain controllers (for production use)
 
 ## Security Considerations
 
