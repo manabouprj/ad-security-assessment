@@ -15,7 +15,7 @@ import sys
 from datetime import datetime, timedelta
 from flask import Flask, jsonify, request, send_file, Response, session
 from flask_cors import CORS
-import src.core.security_assessment as security_assessment
+from src.core.security_assessment import SecurityAssessment
 from src.core.ad_connector import ADConnector
 from src.config.config_manager import ConfigManager
 from src.reports.report_generator import ReportGenerator
@@ -29,7 +29,7 @@ import time
 # Add the project root directory to Python path
 project_root = os.path.dirname(os.path.abspath(__file__))
 if project_root not in sys.path:
-    sys.path.append(project_root)
+    sys.path.insert(0, project_root)
 
 # Configure logging
 logging.basicConfig(
@@ -407,7 +407,7 @@ def run_assessment():
             return jsonify({'error': 'No configuration provided'}), 400
 
         # Run assessment
-        assessment = security_assessment.SecurityAssessment()
+        assessment = SecurityAssessment()
         results = assessment.run()
         
         if not results:
