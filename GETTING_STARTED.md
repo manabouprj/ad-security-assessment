@@ -35,13 +35,16 @@ python -m venv venv
 .\venv\Scripts\activate.bat
 ```
 
-### 3. Install Dependencies
+### 3. Install Dependencies and Package
 ```bash
 # Upgrade pip to latest version
 python -m pip install --upgrade pip
 
-# Install required packages
-pip install -r requirements.txt
+# Install the package in development mode (this will install all required dependencies)
+pip install -e .
+
+# Set up proper package structure (if needed)
+python setup_package.py
 ```
 
 ### 4. Configure the Application
