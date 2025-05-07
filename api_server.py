@@ -18,7 +18,7 @@ from flask_cors import CORS
 from src.core.security_assessment import SecurityAssessment
 from src.core.ad_connector import ADConnector
 from src.config.config_manager import ConfigManager
-from src.reports.report_generator import ReportGenerator
+from reports.report_generator import ReportGenerator
 from functools import wraps
 import hashlib
 import re
