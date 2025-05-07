@@ -4,6 +4,7 @@ setup(
     name="ad-security-assessment",
     version="1.0.0",
     packages=find_packages(include=['src', 'src.*']),
+    package_dir={'': '.'},
     include_package_data=True,
     install_requires=[
         line.strip()
