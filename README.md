@@ -38,12 +38,26 @@ copy config.example.json config.json
 
 ### Running the Application
 
+#### Option 1: Full Web UI (Recommended)
+
 ```bash
-# Start the API server (recommended method)
+# On Windows
+run_web_ui.bat
+
+# On Linux/macOS
+./run_web_ui.sh
+```
+
+Access the web interface at http://localhost:3000
+
+#### Option 2: API Server Only
+
+```bash
+# Start the API server only
 python run_api.py
 ```
 
-Access the web interface at http://localhost:5000
+Access API endpoints at http://localhost:5000/api/*
 
 Default credentials:
 - Username: "Orunmila"
