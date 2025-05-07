@@ -7,6 +7,7 @@ This guide provides detailed instructions for setting up and running the Active 
 ### System Requirements
 - Windows 10/11 or Windows Server 2016/2019/2022
 - Python 3.8 or higher
+- Node.js 14.x or higher and npm (for the web UI)
 - Git (for cloning the repository)
 - Network connectivity to domain controllers (for production use)
 
@@ -33,6 +34,8 @@ python -m venv venv
 .\venv\Scripts\Activate.ps1
 # On Windows Command Prompt:
 .\venv\Scripts\activate.bat
+# On Linux/macOS:
+source venv/bin/activate
 ```
 
 ### 3. Install Dependencies and Package
@@ -52,7 +55,10 @@ python setup_package.py
 1. Create configuration file:
 ```bash
 # Copy example configuration
+# On Windows:
 copy config.example.json config.json
+# On Linux/macOS:
+cp config.example.json config.json
 ```
 
 2. Edit `config.json` with your environment settings:
@@ -70,23 +76,51 @@ copy config.example.json config.json
 
 ## Starting the Application
 
-### Development Environment
+### Option 1: Full Web UI (Recommended)
 
-1. Start the API server using the run script:
+This method starts both the API server and the React frontend development server, providing the complete web interface experience.
+
+#### Windows:
 ```bash
-# Using the run script (recommended)
+# Using the batch file (recommended)
+run_web_ui.bat
+```
+
+#### Linux/macOS:
+```bash
+# Make the script executable (first time only)
+chmod +x run_web_ui.sh
+
+# Run the script
+./run_web_ui.sh
+```
+
+The script will:
+- Check for Node.js and npm
+- Install frontend dependencies if needed
+- Start the API server on port 5000
+- Start the React development server on port 3000
+- Open your browser to the correct URL
+
+**Access the web interface at: http://localhost:3000**
+
+### Option 2: API Server Only
+
+If you only need the API server (for API testing or custom frontends):
+
+```bash
+# Start the API server
 python run_api.py
 
 # For debugging
 python run_api.py --debug
 ```
 
-2. Access the web interface:
-- URL: http://localhost:5000
-- Default username: "Orunmila"
-- You'll be prompted to create a password on first login
+**Important Note:** When running only the API server, you can access the API endpoints at http://localhost:5000/api/*, but you cannot access the web interface directly. Attempting to access http://localhost:5000/ will result in a 404 error.
 
-### Production Environment
+### Option 3: Production Environment
+
+For production deployments:
 
 1. Set secure environment variables:
 ```bash
@@ -104,9 +138,25 @@ pip install waitress
 waitress-serve --host=0.0.0.0 --port=5000 --call "api_server:create_app"
 ```
 
+3. Build and serve the frontend:
+```bash
+# Navigate to frontend directory
+cd frontend
+
+# Install dependencies
+npm install
+
+# Build for production
+npm run build
+
+# Serve using a production web server like nginx or Apache
+```
+
 ## First-Time Setup
 
-1. Access the web interface at http://localhost:5000
+1. Access the web interface:
+   - If using the full Web UI (Option 1): http://localhost:3000
+   - If using API server only (Option 2): API endpoints at http://localhost:5000/api/*
 
 2. Log in with default credentials:
    - Username: "Orunmila"
@@ -123,15 +173,47 @@ waitress-serve --host=0.0.0.0 --port=5000 --call "api_server:create_app"
 
 ### Common Issues and Solutions
 
-1. **ModuleNotFoundError**
+1. **ModuleNotFoundError: No module named 'src.reports.report_generator'**
    ```
    Solution:
-   - Ensure you're in the project root directory
-   - Verify virtual environment is activated
-   - Run the application using run_api.py
+   - Ensure you have the latest version from GitHub
+   - If the error persists, create a file at src/reports/report_generator.py with the following content:
+     ```python
+     """
+     Report Generator
+
+     This module re-exports the ReportGenerator class from the reports package.
+     """
+
+     from src.reports import ReportGenerator
+     ```
    ```
 
-2. **Connection Errors**
+2. **404 Not Found Error when accessing http://localhost:5000/**
+   ```
+   Solution:
+   - This is expected when running only the API server (Option 2)
+   - The API server only serves API endpoints at /api/*
+   - To access the web interface, use the full Web UI (Option 1) and access http://localhost:3000
+   ```
+
+3. **Web UI Error: "Internal server error"**
+   ```
+   Solution:
+   - Make sure both the API server and frontend server are running
+   - Use run_web_ui.bat (Windows) or run_web_ui.sh (Linux/macOS) to start both servers
+   - Access the web interface at http://localhost:3000, not http://localhost:5000
+   ```
+
+4. **npm not found or Node.js errors**
+   ```
+   Solution:
+   - Install Node.js and npm from https://nodejs.org/
+   - Verify installation with: node --version && npm --version
+   - Restart your terminal/command prompt after installation
+   ```
+
+5. **Connection Errors**
    ```
    Solutions:
    - Check network connectivity to domain controllers
@@ -139,7 +221,7 @@ waitress-serve --host=0.0.0.0 --port=5000 --call "api_server:create_app"
    - Ensure firewall rules allow connection
    ```
 
-3. **Authentication Issues**
+6. **Authentication Issues**
    ```
    Solutions:
    - Verify service account credentials
@@ -152,6 +234,14 @@ For detailed error messages and debugging:
 ```bash
 python run_api.py --debug
 ```
+
+### Frontend Debugging
+For frontend issues:
+```bash
+cd frontend
+npm start
+```
+This will start the React development server with detailed error messages in the browser console.
 
 ## Security Best Practices
 
@@ -176,10 +266,11 @@ Logs are stored in the following locations:
 - Application logs: `./logs/app.log`
 - Assessment logs: `./logs/assessment.log`
 - API server logs: `./logs/api.log`
+- Frontend logs: Browser console when using development server
 
 ## Support
 
 For additional support:
 1. Check the [GitHub Issues](https://github.com/manabouprj/ad-security-assessment/issues)
 2. Review the [Wiki](https://github.com/manabouprj/ad-security-assessment/wiki)
-3. Submit new issues for bugs or feature requests 
+3. Submit new issues for bugs or feature requests
