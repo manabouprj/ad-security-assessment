@@ -158,7 +158,8 @@ dmypy.json
 .idea/
 
 # Project specific
-reports/
+/reports/
+!/src/reports/
 logs/
 *.log.*
 ad_assessment_*.log
