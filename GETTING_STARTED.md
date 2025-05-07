@@ -82,7 +82,10 @@ This method starts both the API server and the React frontend development server
 
 #### Windows:
 ```bash
-# Using the batch file (recommended)
+# Using the simplified batch file (recommended)
+start_web_ui.bat
+
+# Or using the original batch file
 run_web_ui.bat
 ```
 
@@ -95,12 +98,17 @@ chmod +x run_web_ui.sh
 ./run_web_ui.sh
 ```
 
-The script will:
+The `start_web_ui.bat` script will:
+- Start the API server on port 5000 in a separate window
+- Start the React development server on port 3000 in a separate window
+- Provide clear status messages and instructions
+- Keep both servers running in their own windows for easier monitoring and debugging
+
+The `run_web_ui.bat` script will:
 - Check for Node.js and npm
 - Install frontend dependencies if needed
 - Start the API server on port 5000
 - Start the React development server on port 3000
-- Open your browser to the correct URL
 
 **Access the web interface at: http://localhost:3000**
 
@@ -201,11 +209,19 @@ npm run build
    ```
    Solution:
    - Make sure both the API server and frontend server are running
-   - Use run_web_ui.bat (Windows) or run_web_ui.sh (Linux/macOS) to start both servers
+   - Use start_web_ui.bat (recommended on Windows) or run_web_ui.bat (Windows) or run_web_ui.sh (Linux/macOS) to start both servers
    - Access the web interface at http://localhost:3000, not http://localhost:5000
    ```
 
-4. **npm not found or Node.js errors**
+4. **Node.js service not running on port 3000**
+   ```
+   Solution:
+   - Use the simplified start_web_ui.bat script which starts the frontend server in a separate window
+   - This makes it easier to monitor the status of both servers and debug any issues
+   - The script ensures that both the API server (port 5000) and frontend server (port 3000) are running correctly
+   ```
+
+5. **npm not found or Node.js errors**
    ```
    Solution:
    - Install Node.js and npm from https://nodejs.org/
@@ -213,7 +229,7 @@ npm run build
    - Restart your terminal/command prompt after installation
    ```
 
-5. **Connection Errors**
+6. **Connection Errors**
    ```
    Solutions:
    - Check network connectivity to domain controllers
@@ -221,7 +237,7 @@ npm run build
    - Ensure firewall rules allow connection
    ```
 
-6. **Authentication Issues**
+7. **Authentication Issues**
    ```
    Solutions:
    - Verify service account credentials
