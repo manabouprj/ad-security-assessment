@@ -16,68 +16,67 @@ REM Add common Node.js installation directories to PATH
 echo Adding potential Node.js paths to PATH...
 set "PATH=%PATH%;C:\Program Files\nodejs;C:\Program Files (x86)\nodejs;%APPDATA%\npm"
 
-REM Check if virtual environment exists
-if not exist venv (
-    echo Creating virtual environment...
-    python -m venv venv
-    if %ERRORLEVEL% neq 0 (
-        echo Error: Failed to create virtual environment.
-        pause
-        exit /b 1
-    )
-)
-
-REM Activate virtual environment
-echo Activating virtual environment...
-call venv\Scripts\activate.bat
+REM Check if npm is installed
+where npm >nul 2>nul
 if %ERRORLEVEL% neq 0 (
-    echo Error: Failed to activate virtual environment.
-    echo Trying alternative activation method...
-    set "VIRTUAL_ENV=%CD%\venv"
-    set "PATH=%VIRTUAL_ENV%\Scripts;%PATH%"
-)
-
-REM Verify virtual environment is activated
-echo Verifying virtual environment...
-venv\Scripts\python -c "import sys; print('Python version:', sys.version); print('Virtual env:', sys.prefix)"
-if %ERRORLEVEL% neq 0 (
-    echo Error: Virtual environment verification failed.
+    echo Error: npm is not installed or not in the PATH.
+    echo Please install Node.js and npm to run the frontend.
     pause
     exit /b 1
 )
 
-REM Install setuptools first to ensure pkg_resources is available
-echo Installing setuptools...
-venv\Scripts\pip install setuptools
+REM Install required Python packages directly (no virtual environment)
+echo Installing required Python packages...
+python -m pip install --upgrade pip setuptools
 if %ERRORLEVEL% neq 0 (
-    echo Error: Failed to install setuptools.
-    pause
-    exit /b 1
+    echo Warning: Failed to upgrade pip and setuptools. Continuing anyway...
 )
 
-REM Install required dependencies
-echo Installing required dependencies...
-venv\Scripts\pip install -r requirements.txt
+python -m pip install -r requirements.txt
 if %ERRORLEVEL% neq 0 (
-    echo Error: Failed to install required dependencies.
-    pause
-    exit /b 1
+    echo Warning: Failed to install some Python dependencies. Continuing anyway...
 )
 
-REM Ensure react-bootstrap-icons is installed
-echo Ensuring react-bootstrap-icons is installed...
+REM Ensure frontend dependencies are installed
+echo Installing frontend dependencies...
 cd frontend
+npm install --force --no-audit --no-fund --loglevel=error
+if %ERRORLEVEL% neq 0 (
+    echo Warning: Failed to install all frontend dependencies. Continuing anyway...
+)
+
+REM Ensure react-bootstrap-icons is installed specifically
+echo Ensuring react-bootstrap-icons is installed...
 npm install react-bootstrap-icons --save --force --no-audit --no-fund --loglevel=error
 if %ERRORLEVEL% neq 0 (
     echo Warning: Failed to install react-bootstrap-icons. Continuing anyway...
 )
 cd ..
 
-REM Run the web UI with sample data and debug mode for more verbose output
-echo Starting the Web UI with sample data...
-venv\Scripts\python run_web_ui.py --load-sample-data --debug --no-browser
+REM Start the API server in a separate window
+echo Starting API server...
+start cmd /k "python api_server.py --host localhost --port 5000 --debug --load-sample-data"
 
-REM Keep the virtual environment active until the script completes
+REM Wait a moment for the API server to start
+echo Waiting for API server to start...
+timeout /t 5 /nobreak > nul
+
+REM Start the frontend server in a separate window
+echo Starting frontend server...
+cd frontend
+start cmd /k "npm start"
+cd ..
+
 echo.
-echo Finished.
+echo Web UI is now running:
+echo API server: http://localhost:5000/api
+echo Frontend: http://localhost:3000
+echo.
+echo Press any key to shut down the servers when done...
 pause
+
+REM When the user presses a key, terminate the servers
+echo Shutting down servers...
+taskkill /f /im node.exe > nul 2>&1
+taskkill /f /im python.exe > nul 2>&1
+echo Servers shut down.
