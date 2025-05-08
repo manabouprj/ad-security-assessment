@@ -25,6 +25,7 @@ import re
 from werkzeug.security import generate_password_hash, check_password_hash
 from pathlib import Path
 import time
+import traceback  # Add traceback for better error reporting
 
 # Add the project root directory to Python path
 project_root = os.path.dirname(os.path.abspath(__file__))
@@ -406,9 +407,15 @@ def run_assessment():
         if not data:
             return jsonify({'error': 'No configuration provided'}), 400
 
+        # Get the current configuration
+        config = config_manager.get_config()
+        
+        # Initialize AD connector with the configuration
+        ad_connector = ADConnector(config)
+        
         # Run assessment
-        assessment = SecurityAssessment()
-        results = assessment.run()
+        assessment = SecurityAssessment(ad_connector, config)
+        results = assessment.run_assessment()
         
         if not results:
             return jsonify({'error': 'Assessment failed to produce results'}), 500
@@ -424,10 +431,10 @@ def run_assessment():
         })
         
     except Exception as e:
-        logger.error(f"Assessment error: {str(e)}")
+        logger.error(f"Assessment error: {str(e)}", exc_info=True)
         return jsonify({
             'error': 'Assessment failed',
-            'message': 'Failed to complete the security assessment'
+            'message': f'Failed to complete the security assessment: {str(e)}'
         }), 500
 
 @app.route('/api/domain-controllers', methods=['GET'])
@@ -435,14 +442,22 @@ def run_assessment():
 def get_domain_controllers():
     """Get list of domain controllers."""
     try:
-        connector = ADConnector()
+        # Get the current configuration
+        config = config_manager.get_config()
+        
+        # Initialize AD connector with the configuration
+        connector = ADConnector(config)
+        
+        # Connect to AD
+        connector.connect()
+        
         controllers = connector.get_domain_controllers()
         return jsonify({'domain_controllers': controllers})
     except Exception as e:
-        logger.error(f"Failed to get domain controllers: {str(e)}")
+        logger.error(f"Failed to get domain controllers: {str(e)}", exc_info=True)
         return jsonify({
             'error': 'Failed to retrieve domain controllers',
-            'message': 'Could not connect to Active Directory'
+            'message': f'Could not connect to Active Directory: {str(e)}'
         }), 500
 
 @app.route('/api/computers', methods=['GET'])
@@ -450,14 +465,22 @@ def get_domain_controllers():
 def get_computers():
     """Get list of computers in the domain."""
     try:
-        connector = ADConnector()
+        # Get the current configuration
+        config = config_manager.get_config()
+        
+        # Initialize AD connector with the configuration
+        connector = ADConnector(config)
+        
+        # Connect to AD
+        connector.connect()
+        
         computers = connector.get_computers()
         return jsonify({'computers': computers})
     except Exception as e:
-        logger.error(f"Failed to get computers: {str(e)}")
+        logger.error(f"Failed to get computers: {str(e)}", exc_info=True)
         return jsonify({
             'error': 'Failed to retrieve computers',
-            'message': 'Could not connect to Active Directory'
+            'message': f'Could not connect to Active Directory: {str(e)}'
         }), 500
 
 @app.route('/api/domain-policies', methods=['GET'])
@@ -465,14 +488,22 @@ def get_computers():
 def get_domain_policies():
     """Get domain policies."""
     try:
-        connector = ADConnector()
+        # Get the current configuration
+        config = config_manager.get_config()
+        
+        # Initialize AD connector with the configuration
+        connector = ADConnector(config)
+        
+        # Connect to AD
+        connector.connect()
+        
         policies = connector.get_domain_policies()
         return jsonify({'policies': policies})
     except Exception as e:
-        logger.error(f"Failed to get domain policies: {str(e)}")
+        logger.error(f"Failed to get domain policies: {str(e)}", exc_info=True)
         return jsonify({
             'error': 'Failed to retrieve domain policies',
-            'message': 'Could not connect to Active Directory'
+            'message': f'Could not connect to Active Directory: {str(e)}'
         }), 500
 
 @app.route('/api/config', methods=['GET'])
@@ -691,54 +722,62 @@ def test_connection():
                 'details': 'Domain, username, and password are required'
             }), 400
 
-        # Initialize AD connector
-        ad_connector = ADConnector(domain, username, password)
+        # Create a config dictionary
+        config = {
+            'domain': domain,
+            'server': data.get('server', ''),
+            'username': username,
+            'password': password,
+            'use_ssl': data.get('use_ssl', True),
+            'verify_ssl': data.get('verify_ssl', True),
+            'port': data.get('port', 636),
+            'mock_mode': data.get('mock_mode', False)
+        }
+
+        # Initialize AD connector with the configuration
+        ad_connector = ADConnector(config)
         
-        # Test basic connection
-        connection_result = ad_connector.test_connection()
+        # Connect to AD
+        connection_success = ad_connector.connect()
         
-        if not connection_result['success']:
+        if not connection_success:
             return jsonify({
                 'success': False,
-                'error': connection_result['error'],
-                'details': connection_result['details'],
-                'solutions': connection_result.get('solutions', [])
+                'error': 'Connection failed',
+                'details': 'Failed to connect to Active Directory',
+                'solutions': [
+                    'Check if the domain controller is accessible',
+                    'Verify network connectivity',
+                    'Ensure the service account has proper permissions'
+                ]
             }), 400
-
-        # Test domain controller discovery
-        dc_result = ad_connector.test_domain_controller_discovery()
         
-        if not dc_result['success']:
+        # Get domain controllers to verify connection
+        try:
+            controllers = ad_connector.get_domain_controllers()
+            
+            return jsonify({
+                'success': True,
+                'message': 'Connection successful',
+                'details': {
+                    'domain_controllers': controllers
+                }
+            })
+        except Exception as e:
+            logger.error(f"Error getting domain controllers: {str(e)}", exc_info=True)
             return jsonify({
                 'success': False,
-                'error': dc_result['error'],
-                'details': dc_result['details'],
-                'solutions': dc_result.get('solutions', [])
+                'error': 'Connection verification failed',
+                'details': f'Could not retrieve domain controllers: {str(e)}',
+                'solutions': [
+                    'Check if the domain controller is accessible',
+                    'Verify network connectivity',
+                    'Ensure the service account has proper permissions'
+                ]
             }), 400
-
-        # Test authentication
-        auth_result = ad_connector.test_authentication()
-        
-        if not auth_result['success']:
-            return jsonify({
-                'success': False,
-                'error': auth_result['error'],
-                'details': auth_result['details'],
-                'solutions': auth_result.get('solutions', [])
-            }), 400
-
-        return jsonify({
-            'success': True,
-            'message': 'All connection tests passed successfully',
-            'details': {
-                'connection': connection_result,
-                'domain_controllers': dc_result,
-                'authentication': auth_result
-            }
-        })
 
     except Exception as e:
-        logger.error(f"Error testing connection: {str(e)}")
+        logger.error(f"Error testing connection: {str(e)}", exc_info=True)
         return jsonify({
             'success': False,
             'error': 'Internal server error',

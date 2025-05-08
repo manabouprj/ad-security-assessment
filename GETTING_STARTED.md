@@ -72,17 +72,57 @@ copy config.example.json config.json
 
 ### Development Environment
 
+#### Option 1: Using the Batch Scripts (Recommended for Windows)
+
+1. Start both the API server and Web UI using the provided batch script:
+```bash
+# Using the batch script (recommended for Windows)
+run_web_ui.bat
+# OR
+start_web_ui.bat
+```
+
+This will:
+- Check for required dependencies
+- Install Python packages if needed
+- Install Node.js packages for the frontend
+- Start the API server on port 5000
+- Start the Web UI on port 3000
+
+2. Access the web interface:
+- API server: http://localhost:5000/api
+- Web UI: http://localhost:3000
+- Default username: "Orunmila"
+- You'll be prompted to create a password on first login
+
+#### Option 2: Manual Startup
+
 1. Start the API server using the run script:
 ```bash
-# Using the run script (recommended)
+# Using the run script
 python run_api.py
+# OR
+python api_server.py --host localhost --port 5000 --debug --load-sample-data
 
 # For debugging
 python run_api.py --debug
 ```
 
-2. Access the web interface:
-- URL: http://localhost:5000
+2. Start the Web UI:
+```bash
+# Navigate to the frontend directory
+cd frontend
+
+# Install dependencies if needed
+npm install --force
+
+# Start the development server
+npm start
+```
+
+3. Access the web interface:
+- API server: http://localhost:5000/api
+- Web UI: http://localhost:3000
 - Default username: "Orunmila"
 - You'll be prompted to create a password on first login
 
@@ -147,6 +187,26 @@ waitress-serve --host=0.0.0.0 --port=5000 --call "api_server:create_app"
    - Ensure required permissions are granted
    ```
 
+4. **Web UI Not Opening on Port 3000**
+   ```
+   Solutions:
+   - Ensure Node.js and npm are installed and in your PATH
+   - Check if the frontend dependencies are installed correctly
+   - Run 'cd frontend && npm install --force' to reinstall dependencies
+   - Verify there are no other processes using port 3000
+   - Use the updated run_web_ui.bat or start_web_ui.bat scripts
+   ```
+
+5. **API Server Internal Server Error**
+   ```
+   Solutions:
+   - Check if all required Python packages are installed
+   - Run 'pip install -r requirements.txt' to ensure all dependencies are installed
+   - Look for error messages in the terminal where the API server is running
+   - Ensure the sample_data directory exists if using --load-sample-data
+   - Verify that config.json exists and is properly formatted
+   ```
+
 ### Debug Mode
 For detailed error messages and debugging:
 ```bash
@@ -182,4 +242,4 @@ Logs are stored in the following locations:
 For additional support:
 1. Check the [GitHub Issues](https://github.com/manabouprj/ad-security-assessment/issues)
 2. Review the [Wiki](https://github.com/manabouprj/ad-security-assessment/wiki)
-3. Submit new issues for bugs or feature requests 
+3. Submit new issues for bugs or feature requests
