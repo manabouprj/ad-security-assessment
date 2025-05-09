@@ -249,6 +249,26 @@ npm run build
    - Ensure required permissions are granted
    ```
 
+8. **Web UI Not Opening on Port 3000**
+   ```
+   Solutions:
+   - Ensure Node.js and npm are installed and in your PATH
+   - Check if the frontend dependencies are installed correctly
+   - Run 'cd frontend && npm install --force' to reinstall dependencies
+   - Verify there are no other processes using port 3000
+   - Use the updated run_web_ui.bat or start_web_ui.bat scripts
+   ```
+
+9. **API Server Internal Server Error**
+   ```
+   Solutions:
+   - Check if all required Python packages are installed
+   - Run 'pip install -r requirements.txt' to ensure all dependencies are installed
+   - Look for error messages in the terminal where the API server is running
+   - Ensure the sample_data directory exists if using --load-sample-data
+   - Verify that config.json exists and is properly formatted
+   ```
+
 ### Debug Mode
 For detailed error messages and debugging:
 ```bash
