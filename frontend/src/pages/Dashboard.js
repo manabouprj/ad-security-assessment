@@ -1,14 +1,55 @@
-import React from 'react';
-import { Row, Col, Card, Button } from 'react-bootstrap';
+import React, { useState, useEffect } from 'react';
+import { Row, Col, Card, Button, ProgressBar, Table } from 'react-bootstrap';
 import { Pie, Bar } from 'react-chartjs-2';
 import { Chart, ArcElement, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
 import LoadingSpinner from '../components/LoadingSpinner';
-import { downloadReport } from '../services/api';
+import { downloadReport, getAssessmentProgress, getAssessmentHistory } from '../services/api';
 
 // Register Chart.js components
 Chart.register(ArcElement, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 const Dashboard = ({ assessmentResults, loading, error }) => {
+  const [assessmentProgress, setAssessmentProgress] = useState(null);
+  const [assessmentHistory, setAssessmentHistory] = useState([]);
+  const [historyLoading, setHistoryLoading] = useState(true);
+  
+  // Fetch assessment progress periodically
+  useEffect(() => {
+    const fetchProgress = async () => {
+      try {
+        const progress = await getAssessmentProgress();
+        setAssessmentProgress(progress);
+      } catch (err) {
+        console.error('Error fetching assessment progress:', err);
+      }
+    };
+    
+    // Initial fetch
+    fetchProgress();
+    
+    // Set up interval to fetch progress every 3 seconds
+    const intervalId = setInterval(fetchProgress, 3000);
+    
+    // Clean up interval on component unmount
+    return () => clearInterval(intervalId);
+  }, []);
+  
+  // Fetch assessment history
+  useEffect(() => {
+    const fetchHistory = async () => {
+      try {
+        setHistoryLoading(true);
+        const history = await getAssessmentHistory();
+        setAssessmentHistory(history);
+      } catch (err) {
+        console.error('Error fetching assessment history:', err);
+      } finally {
+        setHistoryLoading(false);
+      }
+    };
+    
+    fetchHistory();
+  }, []);
   if (loading) {
     return <LoadingSpinner message="Loading assessment results..." />;
   }
@@ -111,6 +152,27 @@ const Dashboard = ({ assessmentResults, loading, error }) => {
           </Button>
         </div>
       </div>
+      
+      {/* Assessment Progress Card */}
+      {assessmentProgress && assessmentProgress.isRunning && (
+        <Card className="mb-4 dashboard-card">
+          <Card.Header className="dashboard-card-header">Assessment in Progress</Card.Header>
+          <Card.Body>
+            <h5>{assessmentProgress.currentTask || 'Running assessment...'}</h5>
+            <ProgressBar 
+              now={assessmentProgress.percentComplete} 
+              label={`${assessmentProgress.percentComplete}%`} 
+              variant="primary" 
+              className="mb-3" 
+              animated
+            />
+            <div className="d-flex justify-content-between">
+              <small className="text-muted">Started: {new Date(assessmentProgress.startTime).toLocaleString()}</small>
+              <small className="text-muted">Estimated completion: {assessmentProgress.estimatedCompletion ? new Date(assessmentProgress.estimatedCompletion).toLocaleString() : 'Calculating...'}</small>
+            </div>
+          </Card.Body>
+        </Card>
+      )}
 
       <Row>
         <Col md={6} lg={3} className="mb-4">
@@ -251,6 +313,63 @@ const Dashboard = ({ assessmentResults, loading, error }) => {
                   View All Results
                 </Button>
               </div>
+            </Card.Body>
+          </Card>
+        </Col>
+      </Row>
+      
+      {/* Previous Assessments */}
+      <Row className="mt-4">
+        <Col md={12}>
+          <Card className="dashboard-card">
+            <Card.Header className="dashboard-card-header">Previous Assessments</Card.Header>
+            <Card.Body>
+              {historyLoading ? (
+                <div className="text-center py-3">
+                  <LoadingSpinner message="Loading assessment history..." />
+                </div>
+              ) : assessmentHistory.length > 0 ? (
+                <Table striped hover responsive>
+                  <thead>
+                    <tr>
+                      <th>Date</th>
+                      <th>Domain</th>
+                      <th>Compliance Score</th>
+                      <th>Passed Checks</th>
+                      <th>Failed Checks</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {assessmentHistory.slice(0, 5).map((assessment, index) => (
+                      <tr key={index}>
+                        <td>{new Date(assessment.timestamp).toLocaleString()}</td>
+                        <td>{assessment.domain}</td>
+                        <td>
+                          <span className={`badge ${
+                            assessment.compliance_percentage >= 80 ? 'bg-success' : 
+                            assessment.compliance_percentage >= 60 ? 'bg-warning' : 
+                            'bg-danger'
+                          }`}>
+                            {assessment.compliance_percentage}%
+                          </span>
+                        </td>
+                        <td>{assessment.passed_checks}</td>
+                        <td>{assessment.failed_checks}</td>
+                        <td>
+                          <Button size="sm" variant="outline-primary" href={`/results?id=${assessment.id}`}>
+                            View Details
+                          </Button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </Table>
+              ) : (
+                <div className="text-center py-3">
+                  <p className="text-muted">No previous assessments found.</p>
+                </div>
+              )}
             </Card.Body>
           </Card>
         </Col>

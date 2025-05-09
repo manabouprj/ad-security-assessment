@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, Form, Button, Alert, Spinner, Modal } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { runAssessment, runInteractiveAssessment, getConfig } from '../services/api';
+import BaselineSelector from '../components/BaselineSelector';
 
 const RunAssessment = () => {
   const navigate = useNavigate();
@@ -19,7 +20,8 @@ const RunAssessment = () => {
     password: '',
     use_ssl: true,
     verify_ssl: true,
-    mock_mode: false
+    mock_mode: false,
+    baseline: null
   });
 
   useEffect(() => {
@@ -55,12 +57,26 @@ const RunAssessment = () => {
     });
   };
 
+  const handleBaselineSelect = (baselineInfo) => {
+    setFormData({
+      ...formData,
+      baseline: baselineInfo
+    });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
     setSuccess(false);
     setOutputText('');
+
+    // Validate baseline selection
+    if (!formData.baseline) {
+      setError('Please select a compliance baseline before running the assessment.');
+      setLoading(false);
+      return;
+    }
 
     try {
       if (interactiveMode) {
@@ -138,6 +154,8 @@ const RunAssessment = () => {
           </Button>
         </Modal.Footer>
       </Modal>
+      
+      <BaselineSelector onBaselineSelect={handleBaselineSelect} />
       
       <Card className="dashboard-card">
         <Card.Header className="dashboard-card-header">Assessment Configuration</Card.Header>

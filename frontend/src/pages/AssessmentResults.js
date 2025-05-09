@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Table, Card, Form, InputGroup, Button, Badge } from 'react-bootstrap';
 import LoadingSpinner from '../components/LoadingSpinner';
+import ReportPreview from '../components/ReportPreview';
 
 const AssessmentResults = ({ assessmentResults, loading, error }) => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -165,6 +166,8 @@ const AssessmentResults = ({ assessmentResults, loading, error }) => {
           </div>
         </Card.Body>
       </Card>
+      
+      <ReportPreview assessmentResults={assessmentResults} />
       
       <Card className="dashboard-card">
         <Card.Header className="dashboard-card-header">
