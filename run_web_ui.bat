@@ -21,6 +21,17 @@ where npm >nul 2>nul
 if %ERRORLEVEL% neq 0 (
     echo Error: npm is not installed or not in the PATH.
     echo Please install Node.js and npm to run the frontend.
+    echo Download from: https://nodejs.org/
+    pause
+    exit /b 1
+)
+
+REM Check if node is installed
+where node >nul 2>nul
+if %ERRORLEVEL% neq 0 (
+    echo Error: Node.js is not installed or not in the PATH.
+    echo Please install Node.js to run the frontend.
+    echo Download from: https://nodejs.org/
     pause
     exit /b 1
 )
@@ -68,7 +79,17 @@ REM Ensure axios is installed for API calls
 echo Ensuring axios is installed...
 call npm install axios --save --force --no-audit --no-fund --loglevel=error
 
+REM Check if react-scripts exists
+if not exist "node_modules\.bin\react-scripts.cmd" (
+    echo react-scripts not found. Installing react-scripts...
+    call npm install react-scripts --force --no-audit --no-fund --loglevel=error
+)
+
 cd ..
+
+REM Set environment variables for the React app
+set "PORT=3000"
+set "REACT_APP_API_URL=http://localhost:5000/api"
 
 REM Start the API server in a separate window
 echo Starting API server...
