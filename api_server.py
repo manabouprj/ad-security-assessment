@@ -68,6 +68,14 @@ CORS(app, supports_credentials=True)
 config_manager = ConfigManager('config.json')
 assessment_results = None
 last_assessment_time = None
+assessment_progress = {
+    'isRunning': False,
+    'percentComplete': 0,
+    'currentTask': '',
+    'startTime': None,
+    'estimatedCompletion': None
+}
+assessment_history = []
 
 # Authentication configuration
 AUTH_FILE = Path(os.path.dirname(os.path.abspath(__file__))) / 'auth_config.json'
@@ -164,6 +172,36 @@ def login_required(f):
             return jsonify({'error': 'Authentication required'}), 401
         return f(*args, **kwargs)
     return decorated_function
+
+@app.route('/api/auth/register', methods=['POST'])
+def register():
+    """Handle user registration"""
+    try:
+        data = request.get_json()
+        username = data.get('username')
+        password = data.get('password')
+
+        if not username or not password:
+            return jsonify({'error': 'Username and password are required'}), 400
+
+        # Check if username already exists
+        auth_config = load_auth_config()
+        if auth_config['username'] == username:
+            return jsonify({'error': 'Username already exists'}), 400
+
+        # Create new user
+        auth_config['username'] = username
+        auth_config['password_hash'] = generate_password_hash(password)
+        auth_config['password_changed'] = True
+        save_auth_config(auth_config)
+        
+        return jsonify({
+            'message': 'User registered successfully'
+        }), 200
+
+    except Exception as e:
+        logger.error(f"Registration error: {str(e)}")
+        return jsonify({'error': 'Internal server error'}), 500
 
 @app.route('/api/auth/login', methods=['POST'])
 def login():
@@ -375,6 +413,20 @@ def handle_error(error):
         'message': 'An unexpected error occurred'
     }), 500
 
+@app.route('/api/assessment/progress', methods=['GET'])
+@login_required
+def get_assessment_progress():
+    """Get the current assessment progress."""
+    global assessment_progress
+    return jsonify(assessment_progress)
+
+@app.route('/api/assessment/history', methods=['GET'])
+@login_required
+def get_assessment_history():
+    """Get the assessment history."""
+    global assessment_history
+    return jsonify(assessment_history)
+
 @app.route('/api/assessment/results', methods=['GET'])
 @login_required
 def get_assessment_results():
@@ -400,7 +452,16 @@ def get_assessment_results():
 def run_assessment():
     """Run a new security assessment."""
     try:
-        global assessment_results, last_assessment_time
+        global assessment_results, last_assessment_time, assessment_progress, assessment_history
+        
+        # Update assessment progress
+        assessment_progress = {
+            'isRunning': True,
+            'percentComplete': 0,
+            'currentTask': 'Initializing assessment...',
+            'startTime': datetime.utcnow().isoformat(),
+            'estimatedCompletion': None
+        }
         
         # Validate request
         data = request.get_json()
@@ -423,6 +484,29 @@ def run_assessment():
         # Store results
         assessment_results = results
         last_assessment_time = datetime.utcnow()
+        
+        # Update assessment progress
+        assessment_progress = {
+            'isRunning': False,
+            'percentComplete': 100,
+            'currentTask': 'Assessment completed',
+            'startTime': assessment_progress['startTime'],
+            'estimatedCompletion': datetime.utcnow().isoformat()
+        }
+        
+        # Add to assessment history
+        assessment_history.append({
+            'id': len(assessment_history) + 1,
+            'timestamp': last_assessment_time.isoformat(),
+            'domain': config.get('domain', 'Unknown'),
+            'compliance_percentage': results.get('summary', {}).get('compliance_percentage', 0),
+            'passed_checks': results.get('summary', {}).get('passed', 0),
+            'failed_checks': results.get('summary', {}).get('failed', 0)
+        })
+        
+        # Keep only the last 10 assessments in history
+        if len(assessment_history) > 10:
+            assessment_history = assessment_history[-10:]
         
         return jsonify({
             'message': 'Assessment completed successfully',
@@ -556,33 +640,44 @@ def get_report(report_type):
                 'message': 'Run an assessment first'
             }), 400
             
+        # Get report format from query parameters
+        report_format = request.args.get('format', 'pdf')
+        
         # Validate report type
-        valid_report_types = ['pdf', 'json', 'csv']
+        valid_report_types = ['technical', 'executive', 'json']
         if report_type not in valid_report_types:
             return jsonify({
                 'error': 'Invalid report type',
                 'message': f'Supported types: {", ".join(valid_report_types)}'
             }), 400
             
+        # Validate report format
+        valid_formats = ['pdf', 'csv']
+        if report_format not in valid_formats and report_type != 'json':
+            return jsonify({
+                'error': 'Invalid report format',
+                'message': f'Supported formats: {", ".join(valid_formats)}'
+            }), 400
+            
         generator = ReportGenerator(assessment_results)
         
-        if report_type == 'pdf':
-            report_path = generator.generate_pdf()
+        if report_type == 'json':
+            return jsonify(assessment_results)
+        elif report_format == 'pdf':
+            report_path = generator.generate_pdf(report_type)
             return send_file(
                 report_path,
                 mimetype='application/pdf',
                 as_attachment=True,
-                download_name=f'security_assessment_{datetime.now().strftime("%Y%m%d_%H%M%S")}.pdf'
+                download_name=f'ad_assessment_{report_type}_{datetime.now().strftime("%Y%m%d_%H%M%S")}.pdf'
             )
-        elif report_type == 'json':
-            return jsonify(assessment_results)
         else:  # csv
-            report_path = generator.generate_csv()
+            report_path = generator.generate_csv(report_type)
             return send_file(
                 report_path,
                 mimetype='text/csv',
                 as_attachment=True,
-                download_name=f'security_assessment_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv'
+                download_name=f'ad_assessment_{report_type}_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv'
             )
             
     except Exception as e:
@@ -695,6 +790,179 @@ def run_interactive_assessment():
         return jsonify({
             'error': 'Failed to run interactive assessment',
             'message': str(e)
+        }), 500
+
+@app.route('/api/reports/<report_type>/preview', methods=['GET'])
+@login_required
+def get_report_preview(report_type):
+    """Generate and return a report preview."""
+    try:
+        if not assessment_results:
+            return jsonify({
+                'error': 'No assessment results available',
+                'message': 'Run an assessment first'
+            }), 400
+            
+        # Get preview format from query parameters
+        preview_format = request.args.get('format', 'html')
+        
+        # Validate report type
+        valid_report_types = ['technical', 'executive']
+        if report_type not in valid_report_types:
+            return jsonify({
+                'error': 'Invalid report type',
+                'message': f'Supported types: {", ".join(valid_report_types)}'
+            }), 400
+            
+        # Validate preview format
+        valid_formats = ['html', 'json']
+        if preview_format not in valid_formats:
+            return jsonify({
+                'error': 'Invalid preview format',
+                'message': f'Supported formats: {", ".join(valid_formats)}'
+            }), 400
+            
+        generator = ReportGenerator(assessment_results)
+        preview_content = generator.generate_report_preview(report_type, preview_format)
+        
+        if preview_format == 'html':
+            return jsonify({'html': preview_content})
+        else:  # json
+            return jsonify(preview_content)
+            
+    except Exception as e:
+        logger.error(f"Failed to generate {report_type} report preview: {str(e)}")
+        return jsonify({
+            'error': f'Failed to generate {report_type} report preview',
+            'message': 'Could not generate the requested preview'
+        }), 500
+
+@app.route('/api/baselines', methods=['GET'])
+@login_required
+def get_baselines():
+    """Get available baselines."""
+    try:
+        # Get baselines directory
+        baselines_dir = os.path.join(os.path.dirname(__file__), 'baselines')
+        
+        # Get list of baseline files
+        baseline_files = []
+        if os.path.exists(baselines_dir):
+            baseline_files = [f for f in os.listdir(baselines_dir) if f.endswith('.json')]
+        
+        # Get custom baselines directory
+        custom_baselines_dir = os.path.join(os.path.dirname(__file__), 'baselines', 'custom')
+        
+        # Get list of custom baseline files
+        custom_baseline_files = []
+        if os.path.exists(custom_baselines_dir):
+            custom_baseline_files = [f for f in os.listdir(custom_baselines_dir) if f.endswith('.json') or f.endswith('.csv') or f.endswith('.pdf')]
+        
+        # Prepare response
+        baselines = []
+        
+        # Add built-in baselines
+        for file in baseline_files:
+            baseline_path = os.path.join(baselines_dir, file)
+            try:
+                with open(baseline_path, 'r') as f:
+                    baseline_data = json.load(f)
+                    baselines.append({
+                        'id': file.replace('.json', ''),
+                        'name': baseline_data.get('name', file.replace('.json', '')),
+                        'description': baseline_data.get('description', ''),
+                        'type': 'built-in',
+                        'file': file
+                    })
+            except Exception as e:
+                logger.error(f"Error loading baseline {file}: {str(e)}")
+        
+        # Add custom baselines
+        for file in custom_baseline_files:
+            file_ext = os.path.splitext(file)[1].lower()
+            baselines.append({
+                'id': f"custom/{file}",
+                'name': file,
+                'description': f"Custom baseline ({file_ext[1:]} format)",
+                'type': 'custom',
+                'file': f"custom/{file}"
+            })
+        
+        return jsonify({'baselines': baselines})
+    except Exception as e:
+        logger.error(f"Failed to get baselines: {str(e)}")
+        return jsonify({
+            'error': 'Failed to retrieve baselines',
+            'message': 'Could not load baseline files'
+        }), 500
+
+@app.route('/api/baselines/custom', methods=['POST'])
+@login_required
+def upload_custom_baseline():
+    """Upload a custom baseline."""
+    try:
+        # Check if file was uploaded
+        if 'file' not in request.files:
+            return jsonify({
+                'error': 'No file provided',
+                'message': 'Please provide a file'
+            }), 400
+        
+        file = request.files['file']
+        
+        # Check if file is empty
+        if file.filename == '':
+            return jsonify({
+                'error': 'No file selected',
+                'message': 'Please select a file'
+            }), 400
+        
+        # Check file extension
+        allowed_extensions = {'json', 'csv', 'pdf'}
+        file_ext = os.path.splitext(file.filename)[1][1:].lower()
+        
+        if file_ext not in allowed_extensions:
+            return jsonify({
+                'error': 'Invalid file type',
+                'message': f'Allowed file types: {", ".join(allowed_extensions)}'
+            }), 400
+        
+        # Create custom baselines directory if it doesn't exist
+        custom_baselines_dir = os.path.join(os.path.dirname(__file__), 'baselines', 'custom')
+        os.makedirs(custom_baselines_dir, exist_ok=True)
+        
+        # Save file
+        filename = secure_filename(file.filename)
+        file_path = os.path.join(custom_baselines_dir, filename)
+        file.save(file_path)
+        
+        # Validate JSON files
+        if file_ext == 'json':
+            try:
+                with open(file_path, 'r') as f:
+                    json.load(f)
+            except json.JSONDecodeError:
+                os.remove(file_path)
+                return jsonify({
+                    'error': 'Invalid JSON file',
+                    'message': 'The uploaded file is not a valid JSON file'
+                }), 400
+        
+        return jsonify({
+            'message': 'Baseline uploaded successfully',
+            'baseline': {
+                'id': f"custom/{filename}",
+                'name': filename,
+                'description': f"Custom baseline ({file_ext} format)",
+                'type': 'custom',
+                'file': f"custom/{filename}"
+            }
+        })
+    except Exception as e:
+        logger.error(f"Failed to upload custom baseline: {str(e)}")
+        return jsonify({
+            'error': 'Failed to upload custom baseline',
+            'message': 'Could not save the uploaded file'
         }), 500
 
 @app.route('/api/health', methods=['GET'])
@@ -830,7 +1098,7 @@ def test_connection():
 
 def load_sample_data():
     """Load sample assessment results for development."""
-    global assessment_results, last_assessment_time
+    global assessment_results, last_assessment_time, assessment_history
     
     sample_data_path = os.path.join(os.path.dirname(__file__), 'sample_data', 'assessment_results.json')
     
@@ -840,6 +1108,24 @@ def load_sample_data():
                 assessment_results = json.load(f)
                 last_assessment_time = datetime.now()
                 logger.info(f"Loaded sample data from {sample_data_path}")
+                
+                # Create sample assessment history
+                assessment_history = []
+                for i in range(5):
+                    days_ago = timedelta(days=i*3)
+                    timestamp = datetime.now() - days_ago
+                    compliance = max(60, 100 - i*8)  # Decreasing compliance over time
+                    passed = int(assessment_results.get('summary', {}).get('total_checks', 100) * compliance / 100)
+                    failed = assessment_results.get('summary', {}).get('total_checks', 100) - passed
+                    
+                    assessment_history.append({
+                        'id': 5 - i,
+                        'timestamp': timestamp.isoformat(),
+                        'domain': assessment_results.get('domain', 'example.com'),
+                        'compliance_percentage': compliance,
+                        'passed_checks': passed,
+                        'failed_checks': failed
+                    })
         else:
             logger.warning(f"Sample data file not found: {sample_data_path}")
     except Exception as e:
