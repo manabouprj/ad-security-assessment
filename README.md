@@ -9,6 +9,11 @@ A comprehensive web-based tool for conducting security assessments of Active Dir
 - ⚙️ Highly configurable assessment parameters
 - 🔄 Mock mode for testing and development
 - 📝 Comprehensive logging and audit trails
+- 🎯 Multiple compliance baseline options (CIS, STIG, Microsoft Security)
+- 📤 Custom compliance baseline uploads (JSON, CSV, PDF)
+- 🔍 Report previews before download
+- 📑 Technical and executive report formats
+- 🛠️ Remediation steps for failed compliance checks
 
 ## Quick Start
 

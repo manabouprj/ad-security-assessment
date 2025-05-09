@@ -181,6 +181,37 @@ npm run build
    - At least 2 numbers
    - At least 1 special character
 
+## Using Compliance Baselines
+
+The application supports multiple compliance baseline options:
+
+1. **Built-in Baselines**:
+   - CIS Benchmarks
+   - STIG Benchmarks
+   - Microsoft Security Benchmarks
+
+2. **Custom Baselines**:
+   - Upload your own compliance baselines in JSON, CSV, or PDF format
+   - Access the baseline selector in the Run Assessment page
+   - Select a baseline before running an assessment
+
+## Report Types and Previews
+
+The application now supports different report types and previews:
+
+1. **Report Types**:
+   - Technical Report: Detailed assessment with all checks and remediation steps
+   - Executive Summary: High-level overview for management
+
+2. **Report Formats**:
+   - PDF: Comprehensive formatted report
+   - CSV: Data in spreadsheet format
+
+3. **Report Preview**:
+   - Preview reports before downloading
+   - Switch between technical and executive views
+   - Select your preferred format for download
+
 ## Troubleshooting
 
 ### Common Issues and Solutions
