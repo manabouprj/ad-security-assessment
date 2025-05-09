@@ -84,6 +84,17 @@ class ConfigManager:
         self._validate_and_fill_config()
         
         return self.config
+        
+    def get_config(self) -> Dict[str, Any]:
+        """
+        Get the current configuration. If configuration is not loaded yet, load it.
+        
+        Returns:
+            Dictionary containing configuration settings
+        """
+        if not self.config:
+            return self.load_config()
+        return self.config
     
     def _update_config_recursive(self, target: Dict[str, Any], source: Dict[str, Any]) -> None:
         """
