@@ -193,7 +193,33 @@ cd frontend
 npm install --force --no-audit --no-fund
 ```
 
-### 6. Port Conflicts
+### 6. Web UI Not Starting on Port 3000
+If the API server is running on port 5000 but the web UI is not working on port 3000:
+
+```bash
+# Check if react-scripts is installed
+cd frontend
+npm list react-scripts
+
+# If not installed or if there are issues, install it explicitly
+npm install react-scripts --force --no-audit --no-fund
+
+# Set environment variables for the React app
+# On Windows:
+set PORT=3000
+set REACT_APP_API_URL=http://localhost:5000/api
+
+# On Linux/macOS:
+export PORT=3000
+export REACT_APP_API_URL=http://localhost:5000/api
+
+# Start the frontend server
+npm start
+```
+
+Alternatively, use the updated start_web_ui.bat script which includes improved Node.js detection and environment variable setting.
+
+### 7. Port Conflicts
 ```bash
 # Check if ports 3000 and 5000 are already in use
 # On Windows:
