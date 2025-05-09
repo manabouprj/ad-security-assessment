@@ -76,7 +76,41 @@ def run_frontend_server(port):
     env['PORT'] = str(port)
     env['REACT_APP_API_URL'] = f'http://localhost:5000/api'
     
-    # First try the standard way
+    # First ensure all dependencies are installed
+    try:
+        logger.info("Installing frontend dependencies...")
+        if is_windows():
+            install_cmd = 'npm install --force --no-audit --no-fund'
+            install_process = subprocess.run(
+                install_cmd,
+                cwd=frontend_dir,
+                env=env,
+                shell=True,
+                check=False,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True
+            )
+        else:
+            install_cmd = ['npm', 'install', '--force', '--no-audit', '--no-fund']
+            install_process = subprocess.run(
+                install_cmd,
+                cwd=frontend_dir,
+                env=env,
+                check=False,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True
+            )
+        
+        if install_process.returncode != 0:
+            logger.warning(f"npm install warning: {install_process.stderr}")
+        else:
+            logger.info("Frontend dependencies installed successfully")
+    except Exception as e:
+        logger.warning(f"Error installing frontend dependencies: {str(e)}")
+    
+    # Try to start the frontend server
     try:
         logger.info("Running 'npm start' in frontend directory...")
         
