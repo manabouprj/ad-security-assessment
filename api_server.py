@@ -714,6 +714,9 @@ def test_connection():
         domain = data.get('domain')
         username = data.get('username')
         password = data.get('password')
+        server = data.get('server', '')
+        use_ssl = data.get('use_ssl', False)
+        port = data.get('port', 389)
         
         if not all([domain, username, password]):
             return jsonify({
@@ -725,30 +728,49 @@ def test_connection():
         # Create a config dictionary
         config = {
             'domain': domain,
-            'server': data.get('server', ''),
+            'server': server,
             'username': username,
             'password': password,
-            'use_ssl': data.get('use_ssl', True),
+            'use_ssl': use_ssl,
             'verify_ssl': data.get('verify_ssl', True),
-            'port': data.get('port', 636),
+            'port': port if port else (636 if use_ssl else 389),
             'mock_mode': data.get('mock_mode', False)
         }
+
+        logger.info(f"Testing connection to domain: {domain}, server: {server or 'auto-discover'}, port: {config['port']}, use_ssl: {use_ssl}")
 
         # Initialize AD connector with the configuration
         ad_connector = ADConnector(config)
         
         # Connect to AD
-        connection_success = ad_connector.connect()
-        
-        if not connection_success:
+        try:
+            connection_success = ad_connector.connect()
+            
+            if not connection_success:
+                return jsonify({
+                    'success': False,
+                    'error': 'Connection failed',
+                    'details': 'Failed to connect to Active Directory',
+                    'solutions': [
+                        'Check if the domain controller is accessible',
+                        'Verify network connectivity',
+                        'Ensure the service account has proper permissions',
+                        'If using SSL/TLS, verify certificates are valid',
+                        'Try using a different port (389 for LDAP, 636 for LDAPS)'
+                    ]
+                }), 400
+        except Exception as conn_error:
+            logger.error(f"Connection error: {str(conn_error)}", exc_info=True)
             return jsonify({
                 'success': False,
-                'error': 'Connection failed',
-                'details': 'Failed to connect to Active Directory',
+                'error': 'Connection error',
+                'details': str(conn_error),
                 'solutions': [
                     'Check if the domain controller is accessible',
                     'Verify network connectivity',
-                    'Ensure the service account has proper permissions'
+                    'Ensure the service account has proper permissions',
+                    'If using SSL/TLS, verify certificates are valid',
+                    'Try using a different port (389 for LDAP, 636 for LDAPS)'
                 ]
             }), 400
         
@@ -756,12 +778,27 @@ def test_connection():
         try:
             controllers = ad_connector.get_domain_controllers()
             
+            # Prepare detailed test results
+            test_results = {
+                'connection': {
+                    'status': 'Success',
+                    'details': f"Connected to {'LDAPS' if use_ssl else 'LDAP'} on port {config['port']}"
+                },
+                'domain_controllers': {
+                    'status': 'Success',
+                    'count': len(controllers),
+                    'controllers': controllers
+                },
+                'authentication': {
+                    'status': 'Success',
+                    'username': username
+                }
+            }
+            
             return jsonify({
                 'success': True,
-                'message': 'Connection successful',
-                'details': {
-                    'domain_controllers': controllers
-                }
+                'message': f"Successfully connected to {domain}" + (f" via {server}" if server else ""),
+                'details': test_results
             })
         except Exception as e:
             logger.error(f"Error getting domain controllers: {str(e)}", exc_info=True)
@@ -772,7 +809,8 @@ def test_connection():
                 'solutions': [
                     'Check if the domain controller is accessible',
                     'Verify network connectivity',
-                    'Ensure the service account has proper permissions'
+                    'Ensure the service account has proper permissions',
+                    'Check if the account has sufficient privileges to query domain controllers'
                 ]
             }), 400
 
@@ -785,7 +823,8 @@ def test_connection():
             'solutions': [
                 'Check if the domain controller is accessible',
                 'Verify network connectivity',
-                'Ensure the service account has proper permissions'
+                'Ensure the service account has proper permissions',
+                'Check the API server logs for more details'
             ]
         }), 500
 
