@@ -56,6 +56,13 @@ class OSDetector:
                 version_match = self.version_patterns.get(os_type, re.compile(r'(\d+(?:\.\d+)*)')).search(os_string)
                 version = version_match.group(1) if version_match else None
                 
+                # For Windows client, extract just the numeric version
+                if os_type == 'windows_client' and version:
+                    # Extract just the numeric part (e.g., "10" from "Windows 10 Enterprise")
+                    numeric_version_match = re.search(r'(\d+)', version)
+                    if numeric_version_match:
+                        version = numeric_version_match.group(1)
+                
                 logger.debug(f"Detected OS: {os_type}, version: {version}")
                 return os_type, version
         
@@ -96,6 +103,12 @@ class OSDetector:
         
         # Use provided version if available, otherwise use detected version
         version = os_version or detected_version or 'Unknown'
+        
+        # For Windows client, ensure we're using just the numeric version
+        if os_type == 'windows_client' and version != 'Unknown':
+            numeric_version_match = re.search(r'(\d+)', version)
+            if numeric_version_match:
+                version = numeric_version_match.group(1)
         
         # Normalize OS name based on type
         if os_type == 'windows_server':
