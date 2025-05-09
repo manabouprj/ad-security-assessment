@@ -123,23 +123,28 @@ const ConnectionTest = () => {
           </Alert>
         )}
 
-        {result && result.success && (
-          <Alert variant="success" className="mt-3">
-            <Alert.Heading>Connection Test Successful</Alert.Heading>
-            <p>{result.message}</p>
-            {result.details && (
-              <>
-                <hr />
-                <h6>Test Results:</h6>
-                <ul>
-                  <li>Basic Connection: {result.details.connection.status}</li>
-                  <li>Domain Controller Discovery: {result.details.domain_controllers.status}</li>
-                  <li>Authentication: {result.details.authentication.status}</li>
-                </ul>
-              </>
-            )}
-          </Alert>
-        )}
+          {result && result.success && (
+            <Alert variant="success" className="mt-3">
+              <Alert.Heading>Connection Test Successful</Alert.Heading>
+              <p>{result.message}</p>
+              {result.details && (
+                <>
+                  <hr />
+                  <h6>Test Results:</h6>
+                  <ul>
+                    <li>Basic Connection: {result.details.connection?.status || 'Success'}</li>
+                    <li>Domain Controller Discovery: {result.details.domain_controllers?.status || 'Success'}</li>
+                    <li>Authentication: {result.details.authentication?.status || 'Success'}</li>
+                  </ul>
+                </>
+              )}
+              {(() => {
+                // Set connection verified in session storage
+                sessionStorage.setItem('connectionVerified', 'true');
+                return null;
+              })()}
+            </Alert>
+          )}
       </Card.Body>
     </Card>
   );

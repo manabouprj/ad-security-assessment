@@ -20,15 +20,25 @@ import RunAssessment from './pages/RunAssessment';
 // Services
 import { fetchAssessmentResults } from './services/api';
 
-const PrivateRoute = ({ children }) => {
+const PrivateRoute = ({ children, requireConnection = false }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isFirstLogin, setIsFirstLogin] = useState(false);
+  const [connectionVerified, setConnectionVerified] = useState(false);
 
   useEffect(() => {
     const checkAuth = async () => {
       try {
         const response = await axios.get('/api/auth/status');
         setIsAuthenticated(response.data.authenticated);
+        
+        // Check if this is the first successful login
+        const passwordChanged = sessionStorage.getItem('passwordChanged');
+        setIsFirstLogin(passwordChanged === 'true');
+        
+        // Check if connection has been verified
+        const connStatus = sessionStorage.getItem('connectionVerified');
+        setConnectionVerified(connStatus === 'true');
       } catch (err) {
         setIsAuthenticated(false);
       } finally {
@@ -51,7 +61,22 @@ const PrivateRoute = ({ children }) => {
     );
   }
 
-  return isAuthenticated ? children : <Navigate to="/login" />;
+  if (!isAuthenticated) {
+    return <Navigate to="/login" />;
+  }
+
+  // If user just logged in, redirect to settings page
+  if (isFirstLogin) {
+    sessionStorage.setItem('passwordChanged', 'false');
+    return <Navigate to="/settings" />;
+  }
+
+  // If connection verification is required but not done, redirect to settings
+  if (requireConnection && !connectionVerified) {
+    return <Navigate to="/settings" />;
+  }
+
+  return children;
 };
 
 const App = () => {
@@ -59,7 +84,15 @@ const App = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  const [connectionVerified, setConnectionVerified] = useState(false);
+
   useEffect(() => {
+    // Check if connection has been verified
+    const connectionStatus = sessionStorage.getItem('connectionVerified');
+    if (connectionStatus === 'true') {
+      setConnectionVerified(true);
+    }
+
     const loadAssessmentResults = async () => {
       try {
         setLoading(true);
@@ -90,7 +123,7 @@ const App = () => {
                 <Route
                   path="/"
                   element={
-                    <PrivateRoute>
+                    <PrivateRoute requireConnection={true}>
                       <Dashboard assessmentResults={assessmentResults} loading={loading} error={error} />
                     </PrivateRoute>
                   }
@@ -98,7 +131,7 @@ const App = () => {
                 <Route
                   path="/results"
                   element={
-                    <PrivateRoute>
+                    <PrivateRoute requireConnection={true}>
                       <AssessmentResults assessmentResults={assessmentResults} loading={loading} error={error} />
                     </PrivateRoute>
                   }
@@ -106,7 +139,7 @@ const App = () => {
                 <Route
                   path="/domain-controllers"
                   element={
-                    <PrivateRoute>
+                    <PrivateRoute requireConnection={true}>
                       <DomainControllers assessmentResults={assessmentResults} loading={loading} error={error} />
                     </PrivateRoute>
                   }
@@ -114,7 +147,7 @@ const App = () => {
                 <Route
                   path="/computers"
                   element={
-                    <PrivateRoute>
+                    <PrivateRoute requireConnection={true}>
                       <Computers assessmentResults={assessmentResults} loading={loading} error={error} />
                     </PrivateRoute>
                   }
@@ -122,7 +155,7 @@ const App = () => {
                 <Route
                   path="/domain-policies"
                   element={
-                    <PrivateRoute>
+                    <PrivateRoute requireConnection={true}>
                       <DomainPolicies assessmentResults={assessmentResults} loading={loading} error={error} />
                     </PrivateRoute>
                   }
@@ -130,7 +163,7 @@ const App = () => {
                 <Route
                   path="/run-assessment"
                   element={
-                    <PrivateRoute>
+                    <PrivateRoute requireConnection={true}>
                       <RunAssessment />
                     </PrivateRoute>
                   }

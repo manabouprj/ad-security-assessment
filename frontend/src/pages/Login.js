@@ -87,37 +87,17 @@ const Login = () => {
         console.log('Login response:', response.data); // Debug log
 
         if (response.data.message === 'Password created successfully') {
-            // After password creation, automatically log in with the same password
-            try {
-                const loginResponse = await axios.post('/api/auth/login', {
-                    username: state.formData.username,
-                    password: state.formData.password
-                }, {
-                    withCredentials: true
-                });
-
-                console.log('Auto-login response:', loginResponse.data); // Debug log
-
-                if (loginResponse.data.message === 'Login successful') {
-                    sessionStorage.setItem('isAuthenticated', 'true');
-                    sessionStorage.setItem('username', state.formData.username);
-                    sessionStorage.setItem('passwordChanged', loginResponse.data.password_changed ? 'true' : 'false');
-                    navigate('/');
-                } else {
-                    setState(prev => ({
-                        ...prev,
-                        error: 'Login failed after password creation. Please try again.',
-                        loading: false
-                    }));
-                }
-            } catch (loginError) {
-                console.error('Auto-login error:', loginError);
-                setState(prev => ({
-                    ...prev,
-                    error: 'Login failed after password creation. Please try again.',
-                    loading: false
-                }));
-            }
+            // After password creation, show success message and prompt to log in
+            setState(prev => ({
+                ...prev,
+                formData: {
+                    ...prev.formData,
+                    password: '',
+                    confirmPassword: ''
+                },
+                error: 'Password created successfully. Please log in with your new password.',
+                loading: false
+            }));
         } else if (response.data.message === 'Login successful') {
             sessionStorage.setItem('isAuthenticated', 'true');
             sessionStorage.setItem('username', state.formData.username);
@@ -416,4 +396,4 @@ const Login = () => {
   );
 };
 
-export default Login; 
+export default Login;

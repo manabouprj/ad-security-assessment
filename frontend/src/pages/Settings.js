@@ -127,6 +127,17 @@ const Settings = () => {
   return (
     <Container className="py-4">
       <h2 className="mb-4">Settings</h2>
+      
+      {!sessionStorage.getItem('connectionVerified') && (
+        <Alert variant="info" className="mb-4">
+          <Alert.Heading>Connection Verification Required</Alert.Heading>
+          <p>
+            Please test your connection to the domain controller below before accessing the dashboard.
+            This ensures that the application can properly communicate with your Active Directory environment.
+          </p>
+        </Alert>
+      )}
+      
       <ConnectionTest />
       
       <Form onSubmit={handleSubmit}>
