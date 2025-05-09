@@ -180,3 +180,7 @@ credentials.json
 *.bak
 *.swp
 *~
+
+# Project specific directories
+github_repo/
+temp_backup/
