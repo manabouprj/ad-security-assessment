@@ -173,15 +173,18 @@ const Settings = () => {
               </Form.Group>
               
               <Form.Group className="mb-3">
-                <Form.Label>Domain Controller</Form.Label>
+                <Form.Label>Domain Controller IP Address</Form.Label>
                 <Form.Control
                   type="text"
                   name="server"
                   value={formData.server}
                   onChange={handleChange}
                   disabled={formData.mock_mode}
-                  placeholder="dc.example.com"
+                  placeholder="192.168.1.100"
                 />
+                <Form.Text className="text-muted">
+                  Enter the IP address of your domain controller for more reliable connections.
+                </Form.Text>
               </Form.Group>
               
               <Form.Group className="mb-3">

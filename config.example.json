@@ -1,11 +1,11 @@
 {
   "domain": "example.com",
-  "server": "dc.example.com",
+  "server": "192.168.1.100",
   "username": "service-account",
   "password": "",
-  "use_ssl": true,
+  "use_ssl": false,
   "verify_ssl": true,
-  "port": 636,
+  "port": 389,
   "sct_baselines_path": "baselines",
   "max_computers_to_assess": 100,
   "assessment_timeout": 3600,
@@ -64,4 +64,4 @@
     "require_https": true,
     "token_expiration_hours": 24
   }
-} 
+}

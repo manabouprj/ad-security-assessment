@@ -65,9 +65,11 @@ cp config.example.json config.json
 ```json
 {
   "domain": "your-domain.com",
-  "server": "dc.your-domain.com",
+  "server": "192.168.1.100",
   "username": "service-account",
   "password": "your-password",
+  "use_ssl": false,
+  "port": 389,
   "mock_mode": false,
   "output_dir": "reports",
   "verbose": true
@@ -235,6 +237,8 @@ npm run build
    - Check network connectivity to domain controllers
    - Verify DNS resolution
    - Ensure firewall rules allow connection
+   - Use IP addresses instead of hostnames for more reliable connections
+   - Try using standard LDAP (port 389) instead of LDAPS if SSL connection fails
    ```
 
 7. **Authentication Issues**

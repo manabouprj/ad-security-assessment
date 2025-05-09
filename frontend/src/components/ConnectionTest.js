@@ -55,6 +55,20 @@ const ConnectionTest = () => {
           </Form.Group>
 
           <Form.Group className="mb-3">
+            <Form.Label>Domain Controller IP</Form.Label>
+            <Form.Control
+              type="text"
+              name="server"
+              value={formData.server}
+              onChange={handleChange}
+              placeholder="e.g., 192.168.1.100"
+            />
+            <Form.Text className="text-muted">
+              Optional: Enter the IP address of your domain controller for more reliable connections.
+            </Form.Text>
+          </Form.Group>
+
+          <Form.Group className="mb-3">
             <Form.Label>Username</Form.Label>
             <Form.Control
               type="text"
@@ -131,4 +145,4 @@ const ConnectionTest = () => {
   );
 };
 
-export default ConnectionTest; 
+export default ConnectionTest;
