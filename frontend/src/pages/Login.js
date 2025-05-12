@@ -115,6 +115,7 @@ const Login = () => {
             sessionStorage.setItem('isAuthenticated', 'true');
             sessionStorage.setItem('username', state.formData.username);
             sessionStorage.setItem('passwordChanged', response.data.password_changed ? 'true' : 'false');
+            sessionStorage.setItem('isFirstLogin', 'true');
             navigate('/');
         } else if (response.data.message === 'Password created successfully') {
             // Show password prompt after initial password creation
@@ -160,6 +161,7 @@ const Login = () => {
             sessionStorage.setItem('isAuthenticated', 'true');
             sessionStorage.setItem('username', state.passwordPromptData.username);
             sessionStorage.setItem('passwordChanged', 'true');
+            sessionStorage.setItem('isFirstLogin', 'true');
             navigate('/');
         } else {
             setState(prev => ({
@@ -294,6 +296,7 @@ const Login = () => {
           sessionStorage.setItem('isAuthenticated', 'true');
           sessionStorage.setItem('username', response.data.username);
           sessionStorage.setItem('passwordChanged', response.data.password_changed ? 'true' : 'false');
+          sessionStorage.setItem('isFirstLogin', 'true');
           navigate('/');
         } else {
           sessionStorage.removeItem('isAuthenticated');
