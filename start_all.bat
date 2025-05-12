@@ -10,6 +10,9 @@ start cmd /k python run_api.py --load-sample-data
 
 echo Starting frontend...
 cd frontend
+echo Installing frontend dependencies...
+call npm install
+echo Starting React development server...
 start cmd /k npm start
 
 echo.
