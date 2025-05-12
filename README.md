@@ -4,6 +4,7 @@ A comprehensive tool for assessing the security posture of Active Directory envi
 
 ## Features
 
+- **Welcome Dashboard**: After login, you'll see a welcome dashboard with a summary of the application's use cases and features.
 - **Baseline Compliance Selection**: Choose from CIS benchmarks, STIG benchmarks, Microsoft Security benchmarks, or upload custom compliance benchmarks in CSV or PDF format.
 - **Detailed Assessment Reports**: Get comprehensive reports on your Active Directory security posture.
 - **Remediation Steps**: View detailed remediation steps for all failed compliance checks in the technical report.
@@ -74,15 +75,16 @@ Alternatively, you can start the components manually:
 
 - Default username: `Orunmila`
 - On first login, you'll be prompted to create a password
+- After successful login, you'll see a welcome modal with a summary of the application's use cases
 
 ### Running an Assessment
 
 1. Navigate to the "Run Assessment" page
 2. Select a compliance baseline from the available options:
-   - CIS Benchmarks
-   - STIG Benchmarks
-   - Microsoft Security Benchmarks
-   - Custom Baselines (uploaded by users)
+   - CIS Benchmarks (Windows 10, Server 2019, etc.)
+   - STIG Benchmarks (Windows Server 2016, etc.)
+   - Microsoft Security Benchmarks (Windows Server 2022, etc.)
+   - Custom Baselines (upload your own in JSON, CSV, or PDF format)
 3. Configure assessment parameters
 4. Click "Start Assessment"
 
@@ -103,20 +105,25 @@ Alternatively, you can start the components manually:
 
 ### "No benchmarks available" Error
 
-If you see "No benchmarks available" in the compliance baselines section:
+If you see "No benchmarks available" or "Failed to load compliance baselines" in the compliance baselines section:
 
-1. Make sure the API server is running:
+1. Use the `start_all.bat` script to start both the API server and frontend:
+   ```
+   start_all.bat
+   ```
+
+2. If starting components manually, make sure the API server is running with the sample data flag:
    ```
    python run_api.py --load-sample-data
    ```
 
-2. Check if the required Python packages are installed:
+3. Check if the required Python packages are installed:
    ```
    pip install flask flask-cors werkzeug
    pip install -r requirements.txt
    ```
 
-3. Verify that the baseline JSON files exist in the `baselines` directory
+4. Verify that the baseline JSON files exist in the `baselines` directory
 
 ### Other Common Issues
 
