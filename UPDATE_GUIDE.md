@@ -194,14 +194,19 @@ pip install flask flask-cors werkzeug
 pip install -r requirements.txt
 ```
 
-3. If you see "No benchmarks available" in the compliance baselines section:
+3. If you see "No benchmarks available" or "Failed to load compliance baselines" in the compliance baselines section:
 
 ```bash
-# Make sure the API server is running
+# Use the start_all.bat script (recommended)
+start_all.bat
+
+# Or manually start both servers:
+# Make sure the API server is running with sample data
 python run_api.py --load-sample-data
 
 # In a separate terminal, run the frontend
 cd frontend
+npm install
 npm start
 ```
 
