@@ -8,6 +8,14 @@ const AssessmentResults = ({ assessmentResults, loading, error }) => {
   const [filterStatus, setFilterStatus] = useState('all');
   const [filterSeverity, setFilterSeverity] = useState('all');
   const [filterTarget, setFilterTarget] = useState('all');
+  const [remediationVisibility, setRemediationVisibility] = useState({});
+  
+  const toggleRemediation = (index) => {
+    setRemediationVisibility(prev => ({
+      ...prev,
+      [index]: !prev[index]
+    }));
+  };
 
   if (loading) {
     return <LoadingSpinner message="Loading assessment results..." />;
@@ -190,7 +198,7 @@ const AssessmentResults = ({ assessmentResults, loading, error }) => {
               <tbody>
                 {filteredResults.length > 0 ? (
                   filteredResults.map((result, index) => {
-                    const [showRemediation, setShowRemediation] = useState(false);
+                    const showRemediation = !!remediationVisibility[index];
                     const hasRemediation = result.status === 'fail' && (result.remediation || true); // Assume all failed checks have remediation
                     
                     return (
@@ -237,7 +245,7 @@ const AssessmentResults = ({ assessmentResults, loading, error }) => {
                               <Button 
                                 variant="link" 
                                 size="sm" 
-                                onClick={() => setShowRemediation(!showRemediation)}
+                                onClick={() => toggleRemediation(index)}
                                 aria-controls={`remediation-${index}`}
                                 aria-expanded={showRemediation}
                               >
