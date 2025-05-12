@@ -78,13 +78,32 @@ cp config.example.json config.json
 
 ## Starting the Application
 
-### Option 1: Full Web UI (Recommended)
+### Option 1: All-in-One Startup (Most Recommended)
 
-This method starts both the API server and the React frontend development server, providing the complete web interface experience.
+This method uses the `start_all.bat` script to install required dependencies, start the API server with sample data, and launch the React frontend development server in a single command.
 
 #### Windows:
 ```bash
-# Using the simplified batch file (recommended)
+# Using the all-in-one startup script (most recommended)
+start_all.bat
+```
+
+This script will:
+- Install required Python packages (Flask, Flask-CORS, Werkzeug)
+- Install all dependencies from requirements.txt
+- Start the API server with sample data on port 5000 in a separate window
+- Start the React development server on port 3000 in a separate window
+- Provide clear status messages and instructions
+
+This is the recommended approach as it ensures all components are properly installed and running, preventing common issues like "No benchmarks available" errors.
+
+### Option 2: Full Web UI
+
+This method starts both the API server and the React frontend development server using the existing scripts.
+
+#### Windows:
+```bash
+# Using the simplified batch file
 start_web_ui.bat
 
 # Or using the original batch file
@@ -114,7 +133,7 @@ The `run_web_ui.bat` script will:
 
 **Access the web interface at: http://localhost:3000**
 
-### Option 2: API Server Only
+### Option 3: API Server Only
 
 If you only need the API server (for API testing or custom frontends):
 
@@ -130,7 +149,7 @@ python run_api.py --debug
 
 **Important Note:** When running only the API server, you can access the API endpoints at http://localhost:5000/api/*, but you cannot access the web interface directly. Attempting to access http://localhost:5000/ will result in a 404 error.
 
-### Option 3: Production Environment
+### Option 4: Production Environment
 
 For production deployments:
 
@@ -215,6 +234,15 @@ The application now supports different report types and previews:
 ## Troubleshooting
 
 ### Common Issues and Solutions
+
+1. **"No benchmarks available" Error in Compliance Baselines**
+   ```
+   Solution:
+   - Use the start_all.bat script to ensure both the API server and frontend are running properly
+   - This script installs required Python packages and starts both servers with the correct configuration
+   - If you're starting servers manually, make sure the API server is running on port 5000 with the --load-sample-data flag
+   ```
+
 
 1. **ModuleNotFoundError: No module named 'src.reports.report_generator'**
    ```
