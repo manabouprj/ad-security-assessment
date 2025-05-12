@@ -141,6 +141,22 @@ pkill -f "python run_web_ui.py"
 
 ## Troubleshooting
 
+### ESLint Errors
+
+If you encounter ESLint errors after updating, such as:
+
+```
+[eslint]
+src\pages\AssessmentResult.js
+Line `93:67: React Hook "useState" cannot be called inside a callback, React hooks must be called in a React function component or a custom React Hook function
+```
+
+These are typically React hooks usage errors that need to be fixed. The latest update includes fixes for known ESLint errors, but if you encounter any new ones:
+
+1. Check if the error is related to React hooks being used incorrectly (inside loops, conditions, or nested functions)
+2. Move the hook declarations to the top level of your component
+3. For toggle state management inside loops or map functions, use an object with keys instead of individual useState hooks
+
 ### Merge Conflicts
 
 If you encounter merge conflicts during the update:
@@ -178,7 +194,7 @@ If the update includes database schema changes:
 2. Run any migration scripts provided with the update
 3. Verify that your data is intact after the migration
 
-## Latest Features
+## Latest Features and Fixes
 
 The latest update includes:
 
@@ -199,6 +215,10 @@ The latest update includes:
    - Widget showing previous 5 assessments with trending graph
    - Quick access to start new assessments
    - Status display for running assessments
+
+5. **Bug Fixes**
+   - Fixed ESLint error in AssessmentResults.js related to React hooks usage
+   - Improved state management for remediation steps display
 
 ## Support
 
