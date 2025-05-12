@@ -15,6 +15,10 @@ sys.path.insert(0, project_root)
 
 # Now import and run the API server
 from api_server import main
+import sys
 
 if __name__ == '__main__':
-    main() 
+    # Add --load-sample-data flag if not already present
+    if '--load-sample-data' not in sys.argv:
+        sys.argv.append('--load-sample-data')
+    main()
