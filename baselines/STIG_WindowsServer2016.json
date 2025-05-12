@@ -1,0 +1,184 @@
+{
+  "name": "STIG Windows Server 2016 Benchmark",
+  "version": "1.0",
+  "description": "Defense Information Systems Agency (DISA) Security Technical Implementation Guide (STIG) for Windows Server 2016",
+  "source": "DISA STIG for Windows Server 2016 v2r5",
+  "settings": {
+    "PasswordHistory": {
+      "value": "24",
+      "path": "Computer Configuration\\Windows Settings\\Security Settings\\Account Policies\\Password Policy",
+      "severity": "high",
+      "description": "Enforce password history",
+      "recommendation": "The number of remembered passwords must be 24",
+      "remediation": "Configure the policy value for Computer Configuration >> Windows Settings >> Security Settings >> Account Policies >> Password Policy >> 'Enforce password history' to '24' passwords remembered."
+    },
+    "MaximumPasswordAge": {
+      "value": "60",
+      "path": "Computer Configuration\\Windows Settings\\Security Settings\\Account Policies\\Password Policy",
+      "severity": "medium",
+      "description": "Maximum password age",
+      "recommendation": "Maximum password age must be 60 days or less",
+      "remediation": "Configure the policy value for Computer Configuration >> Windows Settings >> Security Settings >> Account Policies >> Password Policy >> 'Maximum Password Age' to '60' days or less (excluding '0' which is unacceptable)."
+    },
+    "MinimumPasswordAge": {
+      "value": "1",
+      "path": "Computer Configuration\\Windows Settings\\Security Settings\\Account Policies\\Password Policy",
+      "severity": "medium",
+      "description": "Minimum password age",
+      "recommendation": "Minimum password age must be at least 1 day",
+      "remediation": "Configure the policy value for Computer Configuration >> Windows Settings >> Security Settings >> Account Policies >> Password Policy >> 'Minimum Password Age' to at least '1' day."
+    },
+    "MinimumPasswordLength": {
+      "value": "14",
+      "path": "Computer Configuration\\Windows Settings\\Security Settings\\Account Policies\\Password Policy",
+      "severity": "high",
+      "description": "Minimum password length",
+      "recommendation": "Passwords must be at least 14 characters",
+      "remediation": "Configure the policy value for Computer Configuration >> Windows Settings >> Security Settings >> Account Policies >> Password Policy >> 'Minimum Password Length' to '14' characters."
+    },
+    "PasswordComplexity": {
+      "value": "Enabled",
+      "path": "Computer Configuration\\Windows Settings\\Security Settings\\Account Policies\\Password Policy",
+      "severity": "high",
+      "description": "Password must meet complexity requirements",
+      "recommendation": "Password complexity must be enabled",
+      "remediation": "Configure the policy value for Computer Configuration >> Windows Settings >> Security Settings >> Account Policies >> Password Policy >> 'Password must meet complexity requirements' to 'Enabled'."
+    },
+    "ClearTextPassword": {
+      "value": "Disabled",
+      "path": "Computer Configuration\\Windows Settings\\Security Settings\\Account Policies\\Password Policy",
+      "severity": "high",
+      "description": "Store passwords using reversible encryption",
+      "recommendation": "Reversible password encryption must be disabled",
+      "remediation": "Configure the policy value for Computer Configuration >> Windows Settings >> Security Settings >> Account Policies >> Password Policy >> 'Store passwords using reversible encryption' to 'Disabled'."
+    },
+    "AccountLockoutDuration": {
+      "value": "15",
+      "path": "Computer Configuration\\Windows Settings\\Security Settings\\Account Policies\\Account Lockout Policy",
+      "severity": "medium",
+      "description": "Account lockout duration",
+      "recommendation": "Account lockout duration must be at least 15 minutes",
+      "remediation": "Configure the policy value for Computer Configuration >> Windows Settings >> Security Settings >> Account Policies >> Account Lockout Policy >> 'Account lockout duration' to '15' or more minute(s)."
+    },
+    "AccountLockoutThreshold": {
+      "value": "3",
+      "path": "Computer Configuration\\Windows Settings\\Security Settings\\Account Policies\\Account Lockout Policy",
+      "severity": "high",
+      "description": "Account lockout threshold",
+      "recommendation": "Account lockout threshold must be set to 3 or fewer invalid logon attempts",
+      "remediation": "Configure the policy value for Computer Configuration >> Windows Settings >> Security Settings >> Account Policies >> Account Lockout Policy >> 'Account lockout threshold' to '3' or fewer invalid login attempts, but not '0'."
+    },
+    "ResetAccountLockoutCounter": {
+      "value": "15",
+      "path": "Computer Configuration\\Windows Settings\\Security Settings\\Account Policies\\Account Lockout Policy",
+      "severity": "medium",
+      "description": "Reset account lockout counter after",
+      "recommendation": "Reset account lockout counter must be set to 15 minutes or greater",
+      "remediation": "Configure the policy value for Computer Configuration >> Windows Settings >> Security Settings >> Account Policies >> Account Lockout Policy >> 'Reset account lockout counter after' to '15' or more minutes."
+    },
+    "AuditCredentialValidation": {
+      "value": "Success and Failure",
+      "path": "Computer Configuration\\Windows Settings\\Security Settings\\Advanced Audit Policy Configuration\\Audit Policies\\Account Logon",
+      "severity": "medium",
+      "description": "Audit Credential Validation",
+      "recommendation": "Audit Credential Validation must be configured to Success and Failure",
+      "remediation": "Configure the policy value for Computer Configuration >> Windows Settings >> Security Settings >> Advanced Audit Policy Configuration >> Audit Policies >> Account Logon >> 'Audit Credential Validation' to 'Success and Failure'."
+    },
+    "AuditSecurityGroupManagement": {
+      "value": "Success",
+      "path": "Computer Configuration\\Windows Settings\\Security Settings\\Advanced Audit Policy Configuration\\Audit Policies\\Account Management",
+      "severity": "medium",
+      "description": "Audit Security Group Management",
+      "recommendation": "Audit Security Group Management must be configured to include Success",
+      "remediation": "Configure the policy value for Computer Configuration >> Windows Settings >> Security Settings >> Advanced Audit Policy Configuration >> Audit Policies >> Account Management >> 'Audit Security Group Management' to include 'Success'."
+    },
+    "AuditUserAccountManagement": {
+      "value": "Success and Failure",
+      "path": "Computer Configuration\\Windows Settings\\Security Settings\\Advanced Audit Policy Configuration\\Audit Policies\\Account Management",
+      "severity": "medium",
+      "description": "Audit User Account Management",
+      "recommendation": "Audit User Account Management must be configured to Success and Failure",
+      "remediation": "Configure the policy value for Computer Configuration >> Windows Settings >> Security Settings >> Advanced Audit Policy Configuration >> Audit Policies >> Account Management >> 'Audit User Account Management' to include 'Success and Failure'."
+    },
+    "AuditPNPActivity": {
+      "value": "Success",
+      "path": "Computer Configuration\\Windows Settings\\Security Settings\\Advanced Audit Policy Configuration\\Audit Policies\\Detailed Tracking",
+      "severity": "medium",
+      "description": "Audit PNP Activity",
+      "recommendation": "Audit PNP Activity must be configured to include Success",
+      "remediation": "Configure the policy value for Computer Configuration >> Windows Settings >> Security Settings >> Advanced Audit Policy Configuration >> Audit Policies >> Detailed Tracking >> 'Audit PNP Activity' to include 'Success'."
+    },
+    "AuditLogon": {
+      "value": "Success and Failure",
+      "path": "Computer Configuration\\Windows Settings\\Security Settings\\Advanced Audit Policy Configuration\\Audit Policies\\Logon/Logoff",
+      "severity": "medium",
+      "description": "Audit Logon",
+      "recommendation": "Audit Logon must be configured to Success and Failure",
+      "remediation": "Configure the policy value for Computer Configuration >> Windows Settings >> Security Settings >> Advanced Audit Policy Configuration >> Audit Policies >> Logon/Logoff >> 'Audit Logon' to include 'Success and Failure'."
+    },
+    "AuditOtherLogonLogoffEvents": {
+      "value": "Success and Failure",
+      "path": "Computer Configuration\\Windows Settings\\Security Settings\\Advanced Audit Policy Configuration\\Audit Policies\\Logon/Logoff",
+      "severity": "medium",
+      "description": "Audit Other Logon/Logoff Events",
+      "recommendation": "Audit Other Logon/Logoff Events must be configured to Success and Failure",
+      "remediation": "Configure the policy value for Computer Configuration >> Windows Settings >> Security Settings >> Advanced Audit Policy Configuration >> Audit Policies >> Logon/Logoff >> 'Audit Other Logon/Logoff Events' to include 'Success and Failure'."
+    },
+    "AuditSpecialLogon": {
+      "value": "Success",
+      "path": "Computer Configuration\\Windows Settings\\Security Settings\\Advanced Audit Policy Configuration\\Audit Policies\\Logon/Logoff",
+      "severity": "medium",
+      "description": "Audit Special Logon",
+      "recommendation": "Audit Special Logon must be configured to include Success",
+      "remediation": "Configure the policy value for Computer Configuration >> Windows Settings >> Security Settings >> Advanced Audit Policy Configuration >> Audit Policies >> Logon/Logoff >> 'Audit Special Logon' to include 'Success'."
+    },
+    "AuditRemovableStorage": {
+      "value": "Success and Failure",
+      "path": "Computer Configuration\\Windows Settings\\Security Settings\\Advanced Audit Policy Configuration\\Audit Policies\\Object Access",
+      "severity": "medium",
+      "description": "Audit Removable Storage",
+      "recommendation": "Audit Removable Storage must be configured to Success and Failure",
+      "remediation": "Configure the policy value for Computer Configuration >> Windows Settings >> Security Settings >> Advanced Audit Policy Configuration >> Audit Policies >> Object Access >> 'Audit Removable Storage' to include 'Success and Failure'."
+    },
+    "AuditAuditPolicyChange": {
+      "value": "Success",
+      "path": "Computer Configuration\\Windows Settings\\Security Settings\\Advanced Audit Policy Configuration\\Audit Policies\\Policy Change",
+      "severity": "medium",
+      "description": "Audit Audit Policy Change",
+      "recommendation": "Audit Policy Change must be configured to include Success",
+      "remediation": "Configure the policy value for Computer Configuration >> Windows Settings >> Security Settings >> Advanced Audit Policy Configuration >> Audit Policies >> Policy Change >> 'Audit Audit Policy Change' to include 'Success'."
+    },
+    "AuditPrivilegeUse": {
+      "value": "Success and Failure",
+      "path": "Computer Configuration\\Windows Settings\\Security Settings\\Advanced Audit Policy Configuration\\Audit Policies\\Privilege Use",
+      "severity": "medium",
+      "description": "Audit Privilege Use",
+      "recommendation": "Audit Privilege Use must be configured to Success and Failure",
+      "remediation": "Configure the policy value for Computer Configuration >> Windows Settings >> Security Settings >> Advanced Audit Policy Configuration >> Audit Policies >> Privilege Use >> 'Audit Privilege Use' to include 'Success and Failure'."
+    },
+    "AuditSecurityStateChange": {
+      "value": "Success",
+      "path": "Computer Configuration\\Windows Settings\\Security Settings\\Advanced Audit Policy Configuration\\Audit Policies\\System",
+      "severity": "medium",
+      "description": "Audit Security State Change",
+      "recommendation": "Audit Security State Change must be configured to include Success",
+      "remediation": "Configure the policy value for Computer Configuration >> Windows Settings >> Security Settings >> Advanced Audit Policy Configuration >> Audit Policies >> System >> 'Audit Security State Change' to include 'Success'."
+    },
+    "AuditSecuritySystemExtension": {
+      "value": "Success",
+      "path": "Computer Configuration\\Windows Settings\\Security Settings\\Advanced Audit Policy Configuration\\Audit Policies\\System",
+      "severity": "medium",
+      "description": "Audit Security System Extension",
+      "recommendation": "Audit Security System Extension must be configured to include Success",
+      "remediation": "Configure the policy value for Computer Configuration >> Windows Settings >> Security Settings >> Advanced Audit Policy Configuration >> Audit Policies >> System >> 'Audit Security System Extension' to include 'Success'."
+    },
+    "AuditSystemIntegrity": {
+      "value": "Success and Failure",
+      "path": "Computer Configuration\\Windows Settings\\Security Settings\\Advanced Audit Policy Configuration\\Audit Policies\\System",
+      "severity": "medium",
+      "description": "Audit System Integrity",
+      "recommendation": "Audit System Integrity must be configured to Success and Failure",
+      "remediation": "Configure the policy value for Computer Configuration >> Windows Settings >> Security Settings >> Advanced Audit Policy Configuration >> Audit Policies >> System >> 'Audit System Integrity' to include 'Success and Failure'."
+    }
+  }
+}

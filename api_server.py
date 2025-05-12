@@ -23,6 +23,7 @@ from functools import wraps
 import hashlib
 import re
 from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.utils import secure_filename
 from pathlib import Path
 import time
 import traceback  # Add traceback for better error reporting

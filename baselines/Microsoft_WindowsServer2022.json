@@ -1,0 +1,192 @@
+{
+  "name": "Microsoft Security Baseline for Windows Server 2022",
+  "version": "1.0",
+  "description": "Microsoft recommended security configuration baseline settings for Windows Server 2022",
+  "source": "Microsoft Security Compliance Toolkit 1.0",
+  "settings": {
+    "PasswordHistorySize": {
+      "value": "24",
+      "path": "Computer Configuration\\Windows Settings\\Security Settings\\Account Policies\\Password Policy",
+      "severity": "high",
+      "description": "Enforce password history",
+      "recommendation": "Set 'Enforce password history' to '24 or more password(s)'",
+      "remediation": "Configure the policy value for Computer Configuration > Windows Settings > Security Settings > Account Policies > Password Policy > 'Enforce password history' to '24' or more passwords."
+    },
+    "MaximumPasswordAge": {
+      "value": "60",
+      "path": "Computer Configuration\\Windows Settings\\Security Settings\\Account Policies\\Password Policy",
+      "severity": "medium",
+      "description": "Maximum password age",
+      "recommendation": "Set 'Maximum password age' to '60 or fewer days, but not 0'",
+      "remediation": "Configure the policy value for Computer Configuration > Windows Settings > Security Settings > Account Policies > Password Policy > 'Maximum Password Age' to '60' or fewer days."
+    },
+    "MinimumPasswordAge": {
+      "value": "1",
+      "path": "Computer Configuration\\Windows Settings\\Security Settings\\Account Policies\\Password Policy",
+      "severity": "medium",
+      "description": "Minimum password age",
+      "recommendation": "Set 'Minimum password age' to '1 or more day(s)'",
+      "remediation": "Configure the policy value for Computer Configuration > Windows Settings > Security Settings > Account Policies > Password Policy > 'Minimum Password Age' to '1' or more day(s)."
+    },
+    "MinimumPasswordLength": {
+      "value": "14",
+      "path": "Computer Configuration\\Windows Settings\\Security Settings\\Account Policies\\Password Policy",
+      "severity": "high",
+      "description": "Minimum password length",
+      "recommendation": "Set 'Minimum password length' to '14 or more character(s)'",
+      "remediation": "Configure the policy value for Computer Configuration > Windows Settings > Security Settings > Account Policies > Password Policy > 'Minimum Password Length' to '14' or more characters."
+    },
+    "PasswordComplexity": {
+      "value": "Enabled",
+      "path": "Computer Configuration\\Windows Settings\\Security Settings\\Account Policies\\Password Policy",
+      "severity": "high",
+      "description": "Password must meet complexity requirements",
+      "recommendation": "Ensure 'Password must meet complexity requirements' is set to 'Enabled'",
+      "remediation": "Configure the policy value for Computer Configuration > Windows Settings > Security Settings > Account Policies > Password Policy > 'Password must meet complexity requirements' to 'Enabled'."
+    },
+    "ClearTextPassword": {
+      "value": "Disabled",
+      "path": "Computer Configuration\\Windows Settings\\Security Settings\\Account Policies\\Password Policy",
+      "severity": "high",
+      "description": "Store passwords using reversible encryption",
+      "recommendation": "Ensure 'Store passwords using reversible encryption' is set to 'Disabled'",
+      "remediation": "Configure the policy value for Computer Configuration > Windows Settings > Security Settings > Account Policies > Password Policy > 'Store passwords using reversible encryption' to 'Disabled'."
+    },
+    "AccountLockoutDuration": {
+      "value": "15",
+      "path": "Computer Configuration\\Windows Settings\\Security Settings\\Account Policies\\Account Lockout Policy",
+      "severity": "medium",
+      "description": "Account lockout duration",
+      "recommendation": "Set 'Account lockout duration' to '15 or more minute(s)'",
+      "remediation": "Configure the policy value for Computer Configuration > Windows Settings > Security Settings > Account Policies > Account Lockout Policy > 'Account lockout duration' to '15' or more minutes."
+    },
+    "AccountLockoutThreshold": {
+      "value": "5",
+      "path": "Computer Configuration\\Windows Settings\\Security Settings\\Account Policies\\Account Lockout Policy",
+      "severity": "high",
+      "description": "Account lockout threshold",
+      "recommendation": "Set 'Account lockout threshold' to '5 or fewer invalid logon attempt(s), but not 0'",
+      "remediation": "Configure the policy value for Computer Configuration > Windows Settings > Security Settings > Account Policies > Account Lockout Policy > 'Account lockout threshold' to '5' or fewer invalid login attempts."
+    },
+    "ResetAccountLockoutCounter": {
+      "value": "15",
+      "path": "Computer Configuration\\Windows Settings\\Security Settings\\Account Policies\\Account Lockout Policy",
+      "severity": "medium",
+      "description": "Reset account lockout counter after",
+      "recommendation": "Set 'Reset account lockout counter after' to '15 or more minute(s)'",
+      "remediation": "Configure the policy value for Computer Configuration > Windows Settings > Security Settings > Account Policies > Account Lockout Policy > 'Reset account lockout counter after' to '15' or more minutes."
+    },
+    "AuditAccountLogon": {
+      "value": "Success and Failure",
+      "path": "Computer Configuration\\Windows Settings\\Security Settings\\Advanced Audit Policy Configuration\\Audit Policies\\Account Logon",
+      "severity": "medium",
+      "description": "Audit account logon events",
+      "recommendation": "Configure 'Audit Account Logon Events' to 'Success and Failure'",
+      "remediation": "Configure the policy value for Computer Configuration > Windows Settings > Security Settings > Advanced Audit Policy Configuration > Audit Policies > Account Logon > 'Audit Credential Validation' to 'Success and Failure'."
+    },
+    "AuditAccountManagement": {
+      "value": "Success and Failure",
+      "path": "Computer Configuration\\Windows Settings\\Security Settings\\Advanced Audit Policy Configuration\\Audit Policies\\Account Management",
+      "severity": "medium",
+      "description": "Audit account management",
+      "recommendation": "Configure 'Audit Account Management' to 'Success and Failure'",
+      "remediation": "Configure the policy value for Computer Configuration > Windows Settings > Security Settings > Advanced Audit Policy Configuration > Audit Policies > Account Management > 'Audit User Account Management' to 'Success and Failure'."
+    },
+    "AuditLogon": {
+      "value": "Success and Failure",
+      "path": "Computer Configuration\\Windows Settings\\Security Settings\\Advanced Audit Policy Configuration\\Audit Policies\\Logon/Logoff",
+      "severity": "medium",
+      "description": "Audit logon events",
+      "recommendation": "Configure 'Audit Logon' to 'Success and Failure'",
+      "remediation": "Configure the policy value for Computer Configuration > Windows Settings > Security Settings > Advanced Audit Policy Configuration > Audit Policies > Logon/Logoff > 'Audit Logon' to 'Success and Failure'."
+    },
+    "AuditPolicyChange": {
+      "value": "Success and Failure",
+      "path": "Computer Configuration\\Windows Settings\\Security Settings\\Advanced Audit Policy Configuration\\Audit Policies\\Policy Change",
+      "severity": "medium",
+      "description": "Audit policy change",
+      "recommendation": "Configure 'Audit Policy Change' to 'Success and Failure'",
+      "remediation": "Configure the policy value for Computer Configuration > Windows Settings > Security Settings > Advanced Audit Policy Configuration > Audit Policies > Policy Change > 'Audit Audit Policy Change' to 'Success and Failure'."
+    },
+    "AuditPrivilegeUse": {
+      "value": "Success and Failure",
+      "path": "Computer Configuration\\Windows Settings\\Security Settings\\Advanced Audit Policy Configuration\\Audit Policies\\Privilege Use",
+      "severity": "medium",
+      "description": "Audit privilege use",
+      "recommendation": "Configure 'Audit Privilege Use' to 'Success and Failure'",
+      "remediation": "Configure the policy value for Computer Configuration > Windows Settings > Security Settings > Advanced Audit Policy Configuration > Audit Policies > Privilege Use > 'Audit Sensitive Privilege Use' to 'Success and Failure'."
+    },
+    "AuditSystemEvents": {
+      "value": "Success and Failure",
+      "path": "Computer Configuration\\Windows Settings\\Security Settings\\Advanced Audit Policy Configuration\\Audit Policies\\System",
+      "severity": "medium",
+      "description": "Audit system events",
+      "recommendation": "Configure 'Audit System Events' to 'Success and Failure'",
+      "remediation": "Configure the policy value for Computer Configuration > Windows Settings > Security Settings > Advanced Audit Policy Configuration > Audit Policies > System > 'Audit Security System Extension' to 'Success and Failure'."
+    },
+    "EnableFirewall": {
+      "value": "Enabled",
+      "path": "Computer Configuration\\Windows Settings\\Security Settings\\Windows Firewall with Advanced Security",
+      "severity": "high",
+      "description": "Windows Firewall: Protect all network connections",
+      "recommendation": "Ensure 'Windows Firewall: Domain: Firewall state' is set to 'On'",
+      "remediation": "Configure the policy value for Computer Configuration > Windows Settings > Security Settings > Windows Firewall with Advanced Security > Windows Firewall Properties > Domain Profile > Firewall state to 'On'."
+    },
+    "DisableGuestAccount": {
+      "value": "Disabled",
+      "path": "Computer Configuration\\Windows Settings\\Security Settings\\Local Policies\\Security Options",
+      "severity": "high",
+      "description": "Accounts: Guest account status",
+      "recommendation": "Ensure 'Accounts: Guest account status' is set to 'Disabled'",
+      "remediation": "Configure the policy value for Computer Configuration > Windows Settings > Security Settings > Local Policies > Security Options > 'Accounts: Guest account status' to 'Disabled'."
+    },
+    "LimitBlankPasswordUse": {
+      "value": "Enabled",
+      "path": "Computer Configuration\\Windows Settings\\Security Settings\\Local Policies\\Security Options",
+      "severity": "high",
+      "description": "Accounts: Limit local account use of blank passwords to console logon only",
+      "recommendation": "Ensure 'Accounts: Limit local account use of blank passwords to console logon only' is set to 'Enabled'",
+      "remediation": "Configure the policy value for Computer Configuration > Windows Settings > Security Settings > Local Policies > Security Options > 'Accounts: Limit local account use of blank passwords to console logon only' to 'Enabled'."
+    },
+    "NoLMHash": {
+      "value": "Enabled",
+      "path": "Computer Configuration\\Windows Settings\\Security Settings\\Local Policies\\Security Options",
+      "severity": "high",
+      "description": "Network security: Do not store LAN Manager hash value on next password change",
+      "recommendation": "Ensure 'Network security: Do not store LAN Manager hash value on next password change' is set to 'Enabled'",
+      "remediation": "Configure the policy value for Computer Configuration > Windows Settings > Security Settings > Local Policies > Security Options > 'Network security: Do not store LAN Manager hash value on next password change' to 'Enabled'."
+    },
+    "LsaProtection": {
+      "value": "Enabled",
+      "path": "Computer Configuration\\Windows Settings\\Security Settings\\Local Policies\\Security Options",
+      "severity": "high",
+      "description": "Local Security Authority (LSA) protection",
+      "recommendation": "Ensure 'Run all administrators in Admin Approval Mode' is set to 'Enabled'",
+      "remediation": "Configure the policy value for Computer Configuration > Windows Settings > Security Settings > Local Policies > Security Options > 'User Account Control: Run all administrators in Admin Approval Mode' to 'Enabled'."
+    },
+    "SMBv1": {
+      "value": "Disabled",
+      "path": "Computer Configuration\\Administrative Templates\\MS Security Guide",
+      "severity": "high",
+      "description": "SMB v1 protocol",
+      "recommendation": "Ensure 'Configure SMB v1 server' is set to 'Disabled'",
+      "remediation": "Configure the policy value for Computer Configuration > Administrative Templates > MS Security Guide > 'Configure SMB v1 server' to 'Disabled'."
+    },
+    "PowerShellTranscription": {
+      "value": "Enabled",
+      "path": "Computer Configuration\\Administrative Templates\\Windows Components\\Windows PowerShell",
+      "severity": "medium",
+      "description": "PowerShell Transcription",
+      "recommendation": "Ensure 'Turn on PowerShell Transcription' is set to 'Enabled'",
+      "remediation": "Configure the policy value for Computer Configuration > Administrative Templates > Windows Components > Windows PowerShell > 'Turn on PowerShell Transcription' to 'Enabled'."
+    },
+    "CredentialGuard": {
+      "value": "Enabled with UEFI lock",
+      "path": "Computer Configuration\\Administrative Templates\\System\\Device Guard",
+      "severity": "high",
+      "description": "Credential Guard",
+      "recommendation": "Ensure 'Turn On Virtualization Based Security' is set to 'Enabled' with 'Enabled with UEFI lock' selected for 'Credential Guard Configuration'",
+      "remediation": "Configure the policy value for Computer Configuration > Administrative Templates > System > Device Guard > 'Turn On Virtualization Based Security' to 'Enabled' with 'Enabled with UEFI lock' selected for 'Credential Guard Configuration'."
+    }
+  }
+}

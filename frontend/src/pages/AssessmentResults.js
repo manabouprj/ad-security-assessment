@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Table, Card, Form, InputGroup, Button, Badge } from 'react-bootstrap';
+import { Table, Card, Form, InputGroup, Button, Badge, Collapse } from 'react-bootstrap';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ReportPreview from '../components/ReportPreview';
 
@@ -184,54 +184,86 @@ const AssessmentResults = ({ assessmentResults, loading, error }) => {
                   <th>Actual Value</th>
                   <th>Status</th>
                   <th>Severity</th>
+                  <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredResults.length > 0 ? (
-                  filteredResults.map((result, index) => (
-                    <tr 
-                      key={index} 
-                      className={result.status === 'fail' ? `severity-${result.severity}` : ''}
-                    >
-                      <td>{result.target}</td>
-                      <td>
-                        {result.setting_name}
-                        {result.setting_path && (
-                          <div className="text-muted small">{result.setting_path}</div>
+                  filteredResults.map((result, index) => {
+                    const [showRemediation, setShowRemediation] = useState(false);
+                    const hasRemediation = result.status === 'fail' && (result.remediation || true); // Assume all failed checks have remediation
+                    
+                    return (
+                      <React.Fragment key={index}>
+                        <tr 
+                          className={result.status === 'fail' ? `severity-${result.severity}` : ''}
+                        >
+                          <td>{result.target}</td>
+                          <td>
+                            {result.setting_name}
+                            {result.setting_path && (
+                              <div className="text-muted small">{result.setting_path}</div>
+                            )}
+                          </td>
+                          <td>{result.baseline_value}</td>
+                          <td>{result.actual_value}</td>
+                          <td>
+                            <Badge 
+                              bg={
+                                result.status === 'pass' ? 'success' : 
+                                result.status === 'fail' ? 'danger' : 
+                                result.status === 'warning' ? 'warning' : 
+                                'secondary'
+                              }
+                              text={result.status === 'warning' ? 'dark' : 'white'}
+                            >
+                              {result.status.toUpperCase()}
+                            </Badge>
+                          </td>
+                          <td>
+                            <Badge 
+                              bg={
+                                result.severity === 'high' ? 'danger' : 
+                                result.severity === 'medium' ? 'warning' : 
+                                'success'
+                              }
+                              text={result.severity === 'medium' ? 'dark' : 'white'}
+                            >
+                              {result.severity.toUpperCase()}
+                            </Badge>
+                          </td>
+                          <td>
+                            {hasRemediation && (
+                              <Button 
+                                variant="link" 
+                                size="sm" 
+                                onClick={() => setShowRemediation(!showRemediation)}
+                                aria-controls={`remediation-${index}`}
+                                aria-expanded={showRemediation}
+                              >
+                                {showRemediation ? 'Hide Remediation' : 'Show Remediation'}
+                              </Button>
+                            )}
+                          </td>
+                        </tr>
+                        {hasRemediation && (
+                          <tr>
+                            <td colSpan="7" className="p-0">
+                              <Collapse in={showRemediation}>
+                                <div id={`remediation-${index}`} className="p-3 bg-light">
+                                  <h6>Remediation Steps:</h6>
+                                  <p className="mb-0">{result.remediation || `Configure ${result.setting_name} to match the baseline value: ${result.baseline_value}. This can typically be done through Group Policy or local security policy.`}</p>
+                                </div>
+                              </Collapse>
+                            </td>
+                          </tr>
                         )}
-                      </td>
-                      <td>{result.baseline_value}</td>
-                      <td>{result.actual_value}</td>
-                      <td>
-                        <Badge 
-                          bg={
-                            result.status === 'pass' ? 'success' : 
-                            result.status === 'fail' ? 'danger' : 
-                            result.status === 'warning' ? 'warning' : 
-                            'secondary'
-                          }
-                          text={result.status === 'warning' ? 'dark' : 'white'}
-                        >
-                          {result.status.toUpperCase()}
-                        </Badge>
-                      </td>
-                      <td>
-                        <Badge 
-                          bg={
-                            result.severity === 'high' ? 'danger' : 
-                            result.severity === 'medium' ? 'warning' : 
-                            'success'
-                          }
-                          text={result.severity === 'medium' ? 'dark' : 'white'}
-                        >
-                          {result.severity.toUpperCase()}
-                        </Badge>
-                      </td>
-                    </tr>
-                  ))
+                      </React.Fragment>
+                    );
+                  })
                 ) : (
                   <tr>
-                    <td colSpan="6" className="text-center py-4">
+                    <td colSpan="7" className="text-center py-4">
                       No results match your filters.
                     </td>
                   </tr>

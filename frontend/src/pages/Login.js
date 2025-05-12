@@ -35,7 +35,12 @@ const Login = () => {
       numbers: false,
       special: false
     },
-    isFirstLogin: false
+    isFirstLogin: false,
+    showPasswordPrompt: false,
+    passwordPromptData: {
+      username: '',
+      password: ''
+    }
   });
 
   // Simple password validation - just check if passwords match
@@ -92,10 +97,36 @@ const Login = () => {
         console.log('Login response:', response.data); // Debug log
 
         if (response.data.message === 'Login successful') {
+            // Store credentials for password prompt if this is a first-time login
+            if (!response.data.password_changed) {
+                setState(prev => ({
+                    ...prev,
+                    showPasswordPrompt: true,
+                    passwordPromptData: {
+                        username: state.formData.username,
+                        password: state.formData.password
+                    },
+                    loading: false
+                }));
+                return;
+            }
+            
+            // Normal login flow
             sessionStorage.setItem('isAuthenticated', 'true');
             sessionStorage.setItem('username', state.formData.username);
             sessionStorage.setItem('passwordChanged', response.data.password_changed ? 'true' : 'false');
             navigate('/');
+        } else if (response.data.message === 'Password created successfully') {
+            // Show password prompt after initial password creation
+            setState(prev => ({
+                ...prev,
+                showPasswordPrompt: true,
+                passwordPromptData: {
+                    username: state.formData.username,
+                    password: state.formData.password
+                },
+                loading: false
+            }));
         } else {
             setState(prev => ({
                 ...prev,
@@ -108,6 +139,42 @@ const Login = () => {
         setState(prev => ({
             ...prev,
             error: err.response?.data?.error || 'Login failed. Please check your credentials.',
+            loading: false
+        }));
+    }
+  };
+  
+  const handlePasswordPromptLogin = async () => {
+    setState(prev => ({ ...prev, loading: true, error: null }));
+    
+    try {
+        // Login with the same credentials to verify
+        const response = await axios.post('/api/auth/login', {
+            username: state.passwordPromptData.username,
+            password: state.passwordPromptData.password
+        }, {
+            withCredentials: true
+        });
+        
+        if (response.data.message === 'Login successful') {
+            sessionStorage.setItem('isAuthenticated', 'true');
+            sessionStorage.setItem('username', state.passwordPromptData.username);
+            sessionStorage.setItem('passwordChanged', 'true');
+            navigate('/');
+        } else {
+            setState(prev => ({
+                ...prev,
+                error: 'Verification failed. Please try logging in again.',
+                showPasswordPrompt: false,
+                loading: false
+            }));
+        }
+    } catch (err) {
+        console.error('Password prompt login error:', err.response?.data || err);
+        setState(prev => ({
+            ...prev,
+            error: err.response?.data?.error || 'Verification failed. Please try logging in again.',
+            showPasswordPrompt: false,
             loading: false
         }));
     }
@@ -376,6 +443,7 @@ const Login = () => {
         </Card.Body>
       </Card>
 
+      {/* Password Change Modal */}
       <Modal show={state.showChangePassword} onHide={() => setState(prev => ({ ...prev, showChangePassword: false }))}>
         <Modal.Header closeButton>
           <Modal.Title>Change Password</Modal.Title>
@@ -466,6 +534,37 @@ const Login = () => {
             )}
           </Button>
         </Modal.Footer>
+      </Modal>
+      
+      {/* Password Prompt Modal */}
+      <Modal show={state.showPasswordPrompt} backdrop="static" keyboard={false}>
+        <Modal.Header>
+          <Modal.Title>Sign in with New Password</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <p>Your password has been created successfully. Please sign in with your new password to continue.</p>
+          <Alert variant="info">
+            This additional verification step helps ensure you remember your password and confirms your account is secure.
+          </Alert>
+          
+          <div className="text-center mt-4">
+            <Button 
+              variant="primary" 
+              onClick={handlePasswordPromptLogin}
+              disabled={state.loading}
+              className="px-4"
+            >
+              {state.loading ? (
+                <>
+                  <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" />
+                  {' '}Processing...
+                </>
+              ) : (
+                'Sign In'
+              )}
+            </Button>
+          </div>
+        </Modal.Body>
       </Modal>
     </div>
   );

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Form, Button, ListGroup, Badge, Alert, Spinner, Modal } from 'react-bootstrap';
+import { Card, Form, Button, ListGroup, Badge, Alert, Spinner, Modal, Nav, Tab } from 'react-bootstrap';
 import { getAvailableBaselines, uploadCustomBaseline } from '../services/api';
 
 const BaselineSelector = ({ onBaselineSelect, selectedBaseline }) => {
@@ -90,29 +90,106 @@ const BaselineSelector = ({ onBaselineSelect, selectedBaseline }) => {
   };
 
   const renderBaselineGroups = () => {
-    const builtInBaselines = baselines.filter(b => b.type === 'built-in');
+    // Filter baselines by category
+    const cisBaselines = baselines.filter(b => b.name && b.name.includes('CIS'));
+    const stigBaselines = baselines.filter(b => b.name && b.name.includes('STIG'));
+    const microsoftBaselines = baselines.filter(b => b.name && b.name.includes('Microsoft'));
+    
+    // Any remaining built-in baselines
+    const otherBuiltInBaselines = baselines.filter(b => 
+      b.type === 'built-in' && 
+      !b.name.includes('CIS') && 
+      !b.name.includes('STIG') && 
+      !b.name.includes('Microsoft')
+    );
+    
+    // Custom baselines
     const customBaselines = baselines.filter(b => b.type === 'custom');
 
     return (
-      <>
-        <h6 className="mt-3 mb-2">Built-in Baselines</h6>
-        <ListGroup className="mb-3">
-          {builtInBaselines.length > 0 ? (
-            builtInBaselines.map(renderBaselineItem)
-          ) : (
-            <ListGroup.Item>No built-in baselines available</ListGroup.Item>
-          )}
-        </ListGroup>
-
-        <h6 className="mt-3 mb-2">Custom Baselines</h6>
-        <ListGroup className="mb-3">
-          {customBaselines.length > 0 ? (
-            customBaselines.map(renderBaselineItem)
-          ) : (
-            <ListGroup.Item>No custom baselines uploaded</ListGroup.Item>
-          )}
-        </ListGroup>
-      </>
+      <Tab.Container defaultActiveKey="cis">
+        <Nav variant="tabs" className="mb-3">
+          <Nav.Item>
+            <Nav.Link eventKey="cis">CIS Benchmarks</Nav.Link>
+          </Nav.Item>
+          <Nav.Item>
+            <Nav.Link eventKey="stig">STIG Benchmarks</Nav.Link>
+          </Nav.Item>
+          <Nav.Item>
+            <Nav.Link eventKey="microsoft">Microsoft Security</Nav.Link>
+          </Nav.Item>
+          <Nav.Item>
+            <Nav.Link eventKey="other">Other Built-in</Nav.Link>
+          </Nav.Item>
+          <Nav.Item>
+            <Nav.Link eventKey="custom">Custom</Nav.Link>
+          </Nav.Item>
+        </Nav>
+        
+        <Tab.Content>
+          <Tab.Pane eventKey="cis">
+            <ListGroup className="mb-3">
+              {cisBaselines.length > 0 ? (
+                cisBaselines.map(renderBaselineItem)
+              ) : (
+                <ListGroup.Item>No CIS benchmarks available</ListGroup.Item>
+              )}
+            </ListGroup>
+            <p className="text-muted small">
+              CIS benchmarks provide consensus-based best practices for securely configuring systems.
+            </p>
+          </Tab.Pane>
+          
+          <Tab.Pane eventKey="stig">
+            <ListGroup className="mb-3">
+              {stigBaselines.length > 0 ? (
+                stigBaselines.map(renderBaselineItem)
+              ) : (
+                <ListGroup.Item>No STIG benchmarks available</ListGroup.Item>
+              )}
+            </ListGroup>
+            <p className="text-muted small">
+              STIG (Security Technical Implementation Guides) are the configuration standards for DOD IA and IA-enabled devices/systems.
+            </p>
+          </Tab.Pane>
+          
+          <Tab.Pane eventKey="microsoft">
+            <ListGroup className="mb-3">
+              {microsoftBaselines.length > 0 ? (
+                microsoftBaselines.map(renderBaselineItem)
+              ) : (
+                <ListGroup.Item>No Microsoft Security baselines available</ListGroup.Item>
+              )}
+            </ListGroup>
+            <p className="text-muted small">
+              Microsoft Security baselines are Microsoft-recommended security configuration baselines for Windows and other Microsoft products.
+            </p>
+          </Tab.Pane>
+          
+          <Tab.Pane eventKey="other">
+            <ListGroup className="mb-3">
+              {otherBuiltInBaselines.length > 0 ? (
+                otherBuiltInBaselines.map(renderBaselineItem)
+              ) : (
+                <ListGroup.Item>No other built-in baselines available</ListGroup.Item>
+              )}
+            </ListGroup>
+          </Tab.Pane>
+          
+          <Tab.Pane eventKey="custom">
+            <ListGroup className="mb-3">
+              {customBaselines.length > 0 ? (
+                customBaselines.map(renderBaselineItem)
+              ) : (
+                <ListGroup.Item>No custom baselines uploaded</ListGroup.Item>
+              )}
+            </ListGroup>
+            <p className="text-muted small">
+              Custom baselines are user-uploaded compliance standards that can be in JSON, CSV, or PDF format.
+            </p>
+          </Tab.Pane>
+        </Tab.Content>
+      </Tab.Container>
     );
   };
 
@@ -178,6 +255,11 @@ const BaselineSelector = ({ onBaselineSelect, selectedBaseline }) => {
                 accept=".json,.csv,.pdf"
                 disabled={uploading}
               />
+              <div className="mt-2">
+                <Badge bg="info" className="me-2">JSON</Badge>
+                <Badge bg="info" className="me-2">CSV</Badge>
+                <Badge bg="info">PDF</Badge>
+              </div>
               <Form.Text className="text-muted">
                 Supported formats: JSON, CSV, PDF
               </Form.Text>
