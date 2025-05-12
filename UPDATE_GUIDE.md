@@ -186,6 +186,25 @@ npm install
 cd ..
 ```
 
+2. If you see "No module named 'flask'" or similar errors when running the API server:
+
+```bash
+# Install the required Python packages
+pip install flask flask-cors werkzeug
+pip install -r requirements.txt
+```
+
+3. If you see "No benchmarks available" in the compliance baselines section:
+
+```bash
+# Make sure the API server is running
+python run_api.py --load-sample-data
+
+# In a separate terminal, run the frontend
+cd frontend
+npm start
+```
+
 ### Database Migration
 
 If the update includes database schema changes:
@@ -219,6 +238,7 @@ The latest update includes:
 5. **Bug Fixes**
    - Fixed ESLint error in AssessmentResults.js related to React hooks usage
    - Improved state management for remediation steps display
+   - Fixed issue with baseline loading in the API server
 
 ## Support
 
