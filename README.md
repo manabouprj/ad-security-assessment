@@ -1,157 +1,127 @@
 # Active Directory Security Assessment Tool
 
-A comprehensive web-based tool for conducting security assessments of Active Directory environments. This tool helps security professionals and system administrators evaluate their AD infrastructure against security best practices and Microsoft Security Configuration Toolkit standards.
+A comprehensive tool for assessing the security posture of Active Directory environments against industry-standard compliance benchmarks.
 
-## Key Features
-- 🔒 Secure web-based interface for AD security assessment
-- 🔑 Role-based access control with password protection
-- 📊 Detailed assessment reports and recommendations
-- ⚙️ Highly configurable assessment parameters
-- 🔄 Mock mode for testing and development
-- 📝 Comprehensive logging and audit trails
-- 🎯 Multiple compliance baseline options (CIS, STIG, Microsoft Security)
-- 📤 Custom compliance baseline uploads (JSON, CSV, PDF)
-- 🔍 Report previews before download
-- 📑 Technical and executive report formats
-- 🛠️ Remediation steps for failed compliance checks
+## Features
 
-## Quick Start
+- **Baseline Compliance Selection**: Choose from CIS benchmarks, STIG benchmarks, Microsoft Security benchmarks, or upload custom compliance benchmarks in CSV or PDF format.
+- **Detailed Assessment Reports**: Get comprehensive reports on your Active Directory security posture.
+- **Remediation Steps**: View detailed remediation steps for all failed compliance checks in the technical report.
+- **Report Preview**: Preview technical or executive reports before downloading them.
+- **Multiple Report Formats**: Download reports in PDF or CSV format.
+- **Dashboard**: View assessment results, compliance trends, and key metrics.
 
-For detailed setup and running instructions, please see [GETTING_STARTED.md](GETTING_STARTED.md).
+## Getting Started
 
-### Basic Setup
+### Prerequisites
 
-```bash
-# Clone the repository
-git clone https://github.com/manabouprj/ad-security-assessment.git
-cd ad-security-assessment
+- Windows 10/11 or Windows Server 2016/2019/2022
+- Python 3.8 or higher
+- Node.js 14 or higher
+- npm 6 or higher
 
-# Create and activate virtual environment
-python -m venv venv
-.\venv\Scripts\Activate.ps1  # On Windows PowerShell
+### Installation
 
-# Install package and dependencies
-python -m pip install --upgrade pip
-pip install -e .
+1. Clone the repository:
+   ```
+   git clone https://github.com/manabouprj/ad-security-assessment.git
+   cd ad-security-assessment
+   ```
 
-# Set up package structure
-python setup_package.py
+2. Install Python dependencies:
+   ```
+   pip install -r requirements.txt
+   ```
 
-# Configure the application
-copy config.example.json config.json
-```
+3. Install frontend dependencies:
+   ```
+   cd frontend
+   npm install
+   cd ..
+   ```
 
 ### Running the Application
 
-#### Option 1: Full Web UI (Recommended)
+For the easiest startup experience, use the provided batch file:
 
-```bash
-# On Windows
-run_web_ui.bat
-
-# On Linux/macOS
-./run_web_ui.sh
+```
+start_all.bat
 ```
 
-Access the web interface at http://localhost:3000
+This will:
+1. Install required Python packages
+2. Start the API server with sample data
+3. Start the frontend development server
 
-#### Option 2: API Server Only
+Alternatively, you can start the components manually:
 
-```bash
-# Start the API server only
-python run_api.py
-```
+1. Start the API server:
+   ```
+   python run_api.py --load-sample-data
+   ```
 
-Access API endpoints at http://localhost:5000/api/*
+2. Start the frontend:
+   ```
+   cd frontend
+   npm start
+   ```
 
-Default credentials:
-- Username: "Orunmila"
-- You'll be prompted to create a secure password on first login
+3. Access the application at http://localhost:3000
 
-## Prerequisites
-- Python 3.8 or higher
-- Windows environment (for AD integration)
-- Network access to domain controllers (for production use)
-- Local administrator rights (for installation)
+## Using the Application
 
-## Security Considerations
+### Login
 
-### Production Deployment
-- Change the default username and password
-- Enable HTTPS using a valid SSL certificate
-- Configure proper firewall rules
-- Use a production-grade WSGI server (e.g., Gunicorn)
-- Set up proper backup procedures for assessment data
+- Default username: `Orunmila`
+- On first login, you'll be prompted to create a password
 
-### Access Control
-- Use service accounts with minimum required permissions
-- Enable audit logging
-- Regularly rotate passwords
-- Monitor access logs
+### Running an Assessment
+
+1. Navigate to the "Run Assessment" page
+2. Select a compliance baseline from the available options:
+   - CIS Benchmarks
+   - STIG Benchmarks
+   - Microsoft Security Benchmarks
+   - Custom Baselines (uploaded by users)
+3. Configure assessment parameters
+4. Click "Start Assessment"
+
+### Viewing Results
+
+1. Navigate to the "Assessment Results" page
+2. View the overall compliance score and detailed findings
+3. Click on individual checks to see remediation steps for failed items
+
+### Generating Reports
+
+1. From the "Assessment Results" page, click "Generate Report"
+2. Select the report type (Technical or Executive)
+3. Preview the report in the browser
+4. Download the report in your preferred format (PDF or CSV)
 
 ## Troubleshooting
 
-### Common Issues
+### "No benchmarks available" Error
 
-1. **Connection Errors**
-   - Verify network connectivity to domain controllers
-   - Check service account permissions
-   - Ensure proper DNS resolution
+If you see "No benchmarks available" in the compliance baselines section:
 
-2. **Authentication Issues**
-   - Verify service account credentials
-   - Check for password expiration
-   - Ensure proper group memberships
+1. Make sure the API server is running:
+   ```
+   python run_api.py --load-sample-data
+   ```
 
-3. **Assessment Failures**
-   - Check network timeouts
-   - Verify access permissions
-   - Review error logs in the `logs` directory
+2. Check if the required Python packages are installed:
+   ```
+   pip install flask flask-cors werkzeug
+   pip install -r requirements.txt
+   ```
 
-### Debug Mode
-For troubleshooting, enable debug mode:
-```bash
-python api_server.py --debug
-```
+3. Verify that the baseline JSON files exist in the `baselines` directory
 
-## Development
+### Other Common Issues
 
-### Setting Up Development Environment
-```bash
-# Create virtual environment
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-
-# Install development dependencies
-pip install -r requirements.txt
-```
-
-### Testing
-```bash
-# Run unit tests
-python -m pytest tests/
-
-# Run with mock mode
-python api_server.py --mock
-```
-
-## Contributing
-1. Fork the repository
-2. Create a feature branch
-3. Commit your changes
-4. Push to the branch
-5. Create a Pull Request
+For other common issues, refer to the `UPDATE_GUIDE.md` file for troubleshooting tips.
 
 ## License
-[MIT License](LICENSE)
 
-## Authors
-[Your Organization/Name]
-
-## Support
-For issues and feature requests, please use the [GitHub Issues](https://github.com/manabouprj/ad-security-assessment/issues) page.
-
-## Acknowledgments
-- Microsoft Security Configuration Toolkit
-- Active Directory PowerShell Module
-- Flask and React communities
+This project is licensed under the MIT License - see the LICENSE file for details.
